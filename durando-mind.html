@@ -108,6 +108,18 @@
     .tag-input{background:transparent;border:1px dashed var(--border);border-radius:100px;color:var(--text-secondary);font-size:11px;font-family:inherit;outline:none;padding:2px 10px;width:110px;transition:border-color .15s,width .2s;}
     .tag-input::placeholder{color:var(--text-muted);}
     .tag-input:focus{border-color:var(--border-accent);color:var(--text-primary);width:140px;}
+    /* Tag context / descriptions */
+    .tag-ctx-section{margin-top:8px;}
+    .btn-tag-ctx{background:transparent;border:1px dashed var(--border);border-radius:100px;color:var(--text-muted);font-size:11px;font-family:inherit;cursor:pointer;padding:3px 10px;transition:all .15s;display:inline-flex;align-items:center;gap:4px;}
+    .btn-tag-ctx:hover{border-color:var(--accent);color:var(--accent-hover);}
+    .btn-tag-ctx.open{border-color:var(--accent);color:var(--accent-hover);background:var(--accent-glow);}
+    .tag-ctx-inputs{display:flex;flex-direction:column;gap:7px;margin-top:10px;padding:10px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);}
+    .tag-ctx-row{display:flex;align-items:center;gap:8px;}
+    .tag-ctx-label{font-size:12px;font-weight:600;white-space:nowrap;flex-shrink:0;min-width:70px;max-width:100px;overflow:hidden;text-overflow:ellipsis;}
+    .tag-ctx-input{flex:1;background:var(--bg-app);border:1px solid var(--border);border-radius:8px;padding:5px 10px;color:var(--text-primary);font-size:12px;font-family:inherit;outline:none;transition:border-color .15s;}
+    .tag-ctx-input:focus{border-color:var(--border-accent);}
+    .tag-ctx-input::placeholder{color:var(--text-muted);}
+    .tag-ctx-hint{font-size:11px;color:var(--text-muted);margin-top:4px;line-height:1.5;}
     .btn-delete{flex-shrink:0;padding:7px 13px;background:transparent;color:var(--danger);border:1px solid var(--danger);border-radius:var(--radius);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;}
     .btn-delete:hover{background:var(--danger);color:#fff;}
     .editor-toolbar{display:flex;align-items:center;gap:8px;padding:7px 28px;border-bottom:1px solid var(--border);background:var(--bg-app);flex-shrink:0;}
@@ -392,6 +404,10 @@
           <input class="title-input" id="titleInput" type="text" placeholder="Título da nota..." oninput="onTitleChange()"/>
           <div class="note-meta" id="noteMeta"></div>
           <div class="tags-row" id="tagsRow"></div>
+          <div class="tag-ctx-section hidden" id="tagCtxSection">
+            <button class="btn-tag-ctx" id="btnTagCtx" onclick="toggleTagCtx()">✏️ Contexto das tags</button>
+            <div class="tag-ctx-inputs hidden" id="tagCtxInputs"></div>
+          </div>
         </div>
         <button class="btn-delete" onclick="deleteNote()">🗑 Excluir</button>
       </div>
@@ -569,6 +585,8 @@
     if (user) {
       document.getElementById('loginScreen').style.display = 'none';
       renderUserInfo();
+      loadTagDescs();
+      syncTagDescsFromFirestore();
       subscribeNotes();
       subscribeEvents();
       updateApiStatus();
@@ -640,6 +658,62 @@
     const el = document.getElementById('userInfo');
     if (!el || !currentUser) return;
     el.innerHTML = `<img src="${currentUser.photoURL||''}" style="width:22px;height:22px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none'"/><span style="font-size:11px;color:var(--text-secondary);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(currentUser.displayName||currentUser.email||'')}</span><button onclick="doSignOut()" style="background:none;border:none;color:var(--text-muted);font-size:11px;cursor:pointer;white-space:nowrap;padding:0;">Sair</button>`;
+  }
+
+  // ============================================================
+  // DESCRIÇÕES DE TAGS
+  // ============================================================
+  let tagDescs={};
+
+  function loadTagDescs(){
+    try{tagDescs=JSON.parse(localStorage.getItem('durando_tag_descs')||'{}');}catch{tagDescs={};}
+  }
+  async function syncTagDescsFromFirestore(){
+    if(!currentUser)return;
+    try{
+      const doc=await db.collection('users').doc(currentUser.uid).collection('meta').doc('tagDescs').get();
+      if(doc.exists){tagDescs={...tagDescs,...doc.data()};}
+    }catch(e){console.warn('TagDescs sync error:',e);}
+  }
+  async function saveTagDesc(tag,desc){
+    if(desc&&desc.trim())tagDescs[tag]=desc.trim();
+    else delete tagDescs[tag];
+    localStorage.setItem('durando_tag_descs',JSON.stringify(tagDescs));
+    if(currentUser){
+      try{await db.collection('users').doc(currentUser.uid).collection('meta').doc('tagDescs').set(tagDescs);}
+      catch(e){console.warn('TagDesc save error:',e);}
+    }
+  }
+  function getTagDesc(tag){return tagDescs[tag]||'';}
+
+  function toggleTagCtx(){
+    const inputs=document.getElementById('tagCtxInputs');
+    const btn=document.getElementById('btnTagCtx');
+    if(!inputs||!btn)return;
+    const opening=inputs.classList.contains('hidden');
+    inputs.classList.toggle('hidden',!opening);
+    btn.classList.toggle('open',opening);
+    btn.textContent=opening?'✏️ Ocultar contexto':'✏️ Contexto das tags';
+    if(opening){const note=findById(currentId);if(note)renderTagCtxInputs(note.tags);}
+  }
+  function renderTagCtxInputs(tags){
+    const inputs=document.getElementById('tagCtxInputs');
+    if(!inputs)return;
+    if(!tags||!tags.length){inputs.innerHTML='<div style="font-size:12px;color:var(--text-muted);">Nenhuma tag nesta nota.</div>';return;}
+    inputs.innerHTML=`
+      <div class="tag-ctx-hint">💡 Descreva o contexto de cada tag para que os <strong>Insights</strong> da IA sejam mais precisos e relevantes.</div>
+      ${tags.map(tag=>{
+        const{color}=tagColor(tag);
+        const desc=getTagDesc(tag);
+        return`<div class="tag-ctx-row">
+          <span class="tag-ctx-label" style="color:${color}">#${esc(tag)}</span>
+          <input class="tag-ctx-input" type="text"
+            placeholder="Ex: projetos profissionais de design…"
+            value="${esc(desc)}"
+            onchange="saveTagDesc('${esc(tag)}',this.value)"
+            onblur="saveTagDesc('${esc(tag)}',this.value)"/>
+        </div>`;
+      }).join('')}`;
   }
 
   // ============================================================
@@ -1267,9 +1341,35 @@
   // ============================================================
   // IA
   // ============================================================
-  const AI_PROMPTS={summarize:t=>`Faça um resumo em até 5 bullets em português brasileiro.\n\n${t}`,insights:t=>`Extraia insights e conexões não óbvias em bullets, em português brasileiro.\n\n${t}`,ideas:t=>`Sugira 5 desdobramentos práticos em bullets numerados, em português brasileiro.\n\n${t}`,organize:t=>`Reestruture em: Fatos, Opiniões, Tarefas e Perguntas (ignore vazias), em português brasileiro.\n\n${t}`};
+  const AI_PROMPTS={
+    summarize:t=>`Faça um resumo em até 5 bullets em português brasileiro.\n\n${t}`,
+    insights:(t,tags)=>{
+      const hasCtx=tags&&tags.length&&tags.some(tag=>getTagDesc(tag));
+      if(hasCtx){
+        const ctxLines=tags.map(tag=>{const d=getTagDesc(tag);return d?`- #${tag}: ${d}`:`- #${tag}`;}).join('\n');
+        return`Gere insights e conexões não óbvias sobre a nota abaixo em bullets, em português brasileiro.\n\nContexto das categorias desta nota:\n${ctxLines}\n\nUse esse contexto para tornar os insights mais relevantes, específicos e acionáveis para este domínio.\n\nNota:\n${t}`;
+      }
+      return`Extraia insights e conexões não óbvias em bullets, em português brasileiro.\n\n${t}`;
+    },
+    ideas:t=>`Sugira 5 desdobramentos práticos em bullets numerados, em português brasileiro.\n\n${t}`,
+    organize:t=>`Reestruture em: Fatos, Opiniões, Tarefas e Perguntas (ignore vazias), em português brasileiro.\n\n${t}`
+  };
   const AI_TITLES={summarize:'📝 Resumo',insights:'💡 Insights',ideas:'🚀 Ideias',organize:'📂 Organizado'};
-  async function runAI(action){const note=findById(currentId);if(!note)return;const content=note.title+'\n'+note.content;if(!content.trim()){alert('A nota está vazia.');return;}const cfg=getApiConfig();if(!cfg.key){openApiModal();return;}setAiLoading(true,action);try{setAiResult(AI_TITLES[action],await callAI(cfg,AI_PROMPTS[action](content)));}catch(e){setAiResult('Erro',`❌ ${e.message}`);}finally{setAiLoading(false,action);}}
+  async function runAI(action){
+    const note=findById(currentId);if(!note)return;
+    const content=note.title+'\n'+note.content;
+    if(!content.trim()){alert('A nota está vazia.');return;}
+    const cfg=getApiConfig();if(!cfg.key){openApiModal();return;}
+    setAiLoading(true,action);
+    try{
+      // Insights recebe as tags da nota para usar o contexto das descrições
+      const prompt=action==='insights'
+        ?AI_PROMPTS.insights(content,note.tags||[])
+        :AI_PROMPTS[action](content);
+      setAiResult(AI_TITLES[action],await callAI(cfg,prompt));
+    }catch(e){setAiResult('Erro',`❌ ${e.message}`);}
+    finally{setAiLoading(false,action);}
+  }
   async function callAI(cfg,prompt){return cfg.provider==='anthropic'?callAnthropic(cfg,prompt):callOpenAICompat(cfg,prompt);}
   async function callOpenAICompat(cfg,prompt){const ep={groq:'https://api.groq.com/openai/v1/chat/completions',openai:'https://api.openai.com/v1/chat/completions'};const res=await fetch(ep[cfg.provider],{method:'POST',headers:{'Authorization':`Bearer ${cfg.key}`,'Content-Type':'application/json'},body:JSON.stringify({model:cfg.model,messages:[{role:'user',content:prompt}]})});if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||`HTTP ${res.status}`);}return(await res.json()).choices?.[0]?.message?.content?.trim()??'(vazio)';}
   async function callAnthropic(cfg,prompt){const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'x-api-key':cfg.key,'anthropic-version':'2023-06-01','Content-Type':'application/json'},body:JSON.stringify({model:cfg.model,max_tokens:1024,messages:[{role:'user',content:prompt}]})});if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||`HTTP ${res.status}`);}return(await res.json()).content?.[0]?.text?.trim()??'(vazio)';}
@@ -1411,7 +1511,17 @@
   function renderTagFilter(){const area=document.getElementById('tagFilterArea');const tags=getAllTags();if(!tags.length){area.innerHTML='';return;}area.innerHTML=tags.map(t=>{const{bg,color}=tagColor(t);return`<span class="chip chip-btn${t===activeTag?' active-filter':''}" style="background:${bg};color:${color};" onclick="setActiveTag('${t}')">#${t}</span>`;}).join('');}
   function renderNoteList(){const list=document.getElementById('notesList');const counter=document.getElementById('notesCounter');const visible=getFilteredNotes();const total=notes.length;counter.textContent=(searchQuery||activeTag)?`${visible.length} de ${total} ${total===1?'nota':'notas'}`:`${total} ${total===1?'nota':'notas'}`;if(!total){list.innerHTML=`<div class="empty-list">Nenhuma nota ainda.<br>Clique em "Nova Nota"!</div>`;return;}if(!visible.length){list.innerHTML=`<div class="empty-list">Nenhuma nota encontrada.</div>`;return;}list.innerHTML=visible.map(n=>{const tagsH=n.tags.length?`<div class="note-card-tags">${n.tags.map(t=>{const{bg,color}=tagColor(t);return`<span class="chip" style="background:${bg};color:${color};">#${t}</span>`;}).join('')}</div>`:'';return`<div class="note-card${n.id===currentId?' active':''}" onclick="openNote('${n.id}')"><div class="note-card-title">${esc(n.title)||'Sem título'}</div><div class="note-card-preview">${esc(n.content)||'Nota vazia…'}</div><div class="note-card-date">${relativeTime(n.updatedAt)}</div>${tagsH}</div>`;}).join('');}
   function renderEditor(){const emptyEl=document.getElementById('emptyState');const editorEl=document.getElementById('editor');if(!currentId){emptyEl.classList.remove('hidden');editorEl.classList.add('hidden');return;}const note=findById(currentId);if(!note)return;emptyEl.classList.add('hidden');editorEl.classList.remove('hidden');document.getElementById('titleInput').value=note.title;document.getElementById('contentInput').value=note.content;closeAiPanel();refreshMeta();renderTagsInEditor();updateRecordBtn();}
-  function renderTagsInEditor(){const note=findById(currentId);const row=document.getElementById('tagsRow');if(!note||!row)return;const chips=note.tags.map(t=>{const{bg,color}=tagColor(t);return`<span class="chip" style="background:${bg};color:${color};">#${t}<button class="chip-remove" onclick="removeTag('${t}')">✕</button></span>`;}).join('');row.innerHTML=chips+`<input class="tag-input" id="tagInput" type="text" placeholder="+ adicionar tag" maxlength="30" onkeydown="onTagKeydown(event)"/>`;}
+  function renderTagsInEditor(){
+    const note=findById(currentId);const row=document.getElementById('tagsRow');if(!note||!row)return;
+    const chips=note.tags.map(t=>{const{bg,color}=tagColor(t);return`<span class="chip" style="background:${bg};color:${color};">#${t}<button class="chip-remove" onclick="removeTag('${t}')">✕</button></span>`;}).join('');
+    row.innerHTML=chips+`<input class="tag-input" id="tagInput" type="text" placeholder="+ adicionar tag" maxlength="30" onkeydown="onTagKeydown(event)"/>`;
+    // Mostrar/ocultar seção de contexto conforme a nota tem tags
+    const sec=document.getElementById('tagCtxSection');
+    if(sec){sec.classList.toggle('hidden',!note.tags||!note.tags.length);}
+    // Se os inputs estiverem abertos, atualizar com as tags atuais
+    const inputs=document.getElementById('tagCtxInputs');
+    if(inputs&&!inputs.classList.contains('hidden'))renderTagCtxInputs(note.tags);
+  }
   function onTagKeydown(e){if(e.key==='Enter'){e.preventDefault();addTag(e.target.value);e.target.value='';}}
   function refreshMeta(){const n=findById(currentId);if(!n)return;document.getElementById('noteMeta').textContent=`Criada ${relativeTime(n.createdAt)}  ·  Atualizada ${relativeTime(n.updatedAt)}`;}
 
