@@ -911,11 +911,15 @@
 
   function parseEventText(raw){
     let text=raw.trim();const now=new Date();let date=null,hour=null,minute=null;
-    const tM=text.match(/\bàs?\s*(\d{1,2})[h:](\d{2})?(?!\d)/i);
+    // Detecta horário: "às 15h", "as 15:00", "às 9h30", "15h", "15h30", "15:00"
+    const tM=text.match(/\b(?:às?|as)\s+(\d{1,2})[h:](\d{2})?(?!\d)/i)
+            ||text.match(/\b(\d{1,2})h(\d{2})?(?!\w)/i)
+            ||text.match(/\b(\d{1,2}):(\d{2})(?!\d)/);
     if(tM){hour=parseInt(tM[1]);minute=tM[2]?parseInt(tM[2]):0;if(hour>=0&&hour<=23)text=text.replace(tM[0],'').trim();else{hour=null;minute=null;}}
+    // Detecta data relativa (com e sem acento para robustez)
     if(/\bhoje\b/i.test(text)){date=new Date(now.getFullYear(),now.getMonth(),now.getDate());text=text.replace(/\bhoje\b/i,'').trim();}
-    else if(/\bamanhã\b/i.test(text)){date=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1);text=text.replace(/\bamanhã\b/i,'').trim();}
-    else if(/\bdepois de amanhã\b/i.test(text)){date=new Date(now.getFullYear(),now.getMonth(),now.getDate()+2);text=text.replace(/\bdepois de amanhã\b/i,'').trim();}
+    else if(/\b(?:amanhã|amanha)\b/i.test(text)){date=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1);text=text.replace(/\b(?:amanhã|amanha)\b/i,'').trim();}
+    else if(/\bdepois\s+de\s+amanhã\b/i.test(text)){date=new Date(now.getFullYear(),now.getMonth(),now.getDate()+2);text=text.replace(/\bdepois\s+de\s+amanhã\b/i,'').trim();}
     else{
       const dM=text.match(/\b(\d{1,2})\/(\d{1,2})(?:\/(\d{4}|\d{2}))?\b/);
       if(dM){const d=parseInt(dM[1]),mo=parseInt(dM[2])-1,yr=dM[3]?(dM[3].length===2?2000+parseInt(dM[3]):parseInt(dM[3])):now.getFullYear();date=new Date(yr,mo,d);text=text.replace(dM[0],'').trim();}
@@ -932,7 +936,7 @@
     }
     let datetime=null;
     if(date){const h=hour!==null?hour:9,m=minute!==null?minute:0;datetime=new Date(date.getFullYear(),date.getMonth(),date.getDate(),h,m);}
-    text=text.replace(/^\s*[-–—:]\s*/,'').replace(/\s*[-–—:]\s*$/,'').replace(/\bàs?\b/gi,'').replace(/\s{2,}/g,' ').trim();
+    text=text.replace(/^\s*[-–—:]\s*/,'').replace(/\s*[-–—:]\s*$/,'').replace(/\b(?:às?|as)\b/gi,'').replace(/\s{2,}/g,' ').trim();
     let title=text,description='';
     const si=text.search(/\s*[-–—]\s*|\n/);
     if(si>2){title=text.substring(0,si).trim();description=text.substring(si).replace(/^[-–—\s]+/,'').trim();}
