@@ -543,8 +543,25 @@
 
   function signInWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).catch(e => alert('Erro ao entrar: ' + e.message));
+    // Usa redirect em mobile (mais compatível com iOS/Safari/PWA)
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      auth.signInWithRedirect(provider).catch(e => alert('Erro ao entrar: ' + e.message));
+    } else {
+      auth.signInWithPopup(provider).catch(e => alert('Erro ao entrar: ' + e.message));
+    }
   }
+
+  // Lida com o retorno do redirect do Google (mobile)
+  auth.getRedirectResult().then(result => {
+    if (result && result.user) {
+      // Login via redirect concluído — onAuthStateChanged cuida do resto
+    }
+  }).catch(e => {
+    if (e.code !== 'auth/no-current-user') {
+      alert('Erro ao entrar: ' + e.message);
+    }
+  });
   function doSignOut() {
     if(notesUnsub) notesUnsub();
     if(eventsUnsub) eventsUnsub();
