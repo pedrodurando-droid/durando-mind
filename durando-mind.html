@@ -303,6 +303,33 @@
     .mm-filter-badge{position:absolute;top:14px;left:14px;display:flex;align-items:center;gap:6px;background:var(--bg-card);border:1px solid var(--border-accent);padding:5px 12px;border-radius:100px;font-size:12px;font-weight:600;color:var(--accent-hover);cursor:pointer;z-index:10;}
     .mm-filter-badge.hidden{display:none;}
     .mm-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--text-muted);pointer-events:none;}
+
+    /* ============================================================
+       AUDIOBOOK MODE
+    ============================================================ */
+    .btn-ab-mode{width:100%;padding:7px 12px;background:transparent;color:var(--text-secondary);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px;}
+    .btn-ab-mode:hover{border-color:var(--accent);color:var(--accent-hover);}
+    .btn-ab-mode.active{background:var(--accent-glow);border-color:var(--border-accent);color:var(--accent-hover);}
+    .note-card-wrap{position:relative;}
+    .ab-checkbox{position:absolute;top:9px;right:9px;width:18px;height:18px;border-radius:50%;border:2px solid var(--border);background:var(--bg-app);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;font-size:10px;pointer-events:none;}
+    .ab-checkbox.checked{background:var(--accent);border-color:var(--accent);color:#fff;}
+    .note-card.ab-selected{border-color:var(--accent);background:var(--accent-glow);}
+    .btn-hear-selected{width:100%;padding:8px 12px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:6px;}
+    .btn-hear-selected:hover{background:var(--accent-hover);}
+    .btn-hear-selected:disabled{opacity:.4;pointer-events:none;}
+    /* Mini Player */
+    .ab-player{position:fixed;bottom:0;left:0;right:0;background:#13131b;border-top:2px solid var(--border-accent);padding:10px 20px 14px;display:flex;flex-direction:column;gap:8px;z-index:200;box-shadow:0 -4px 28px rgba(0,0,0,.6);}
+    .ab-player.hidden{display:none!important;}
+    .ab-player-top{display:flex;align-items:center;gap:12px;}
+    .ab-note-name{flex:1;font-size:13px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .ab-progress-text{font-size:11px;color:var(--text-muted);white-space:nowrap;flex-shrink:0;}
+    .ab-ctrls{display:flex;align-items:center;justify-content:center;gap:10px;}
+    .ab-ctrl{width:34px;height:34px;border-radius:50%;background:transparent;border:1px solid var(--border);color:var(--text-secondary);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+    .ab-ctrl:hover{border-color:var(--accent);color:var(--accent-hover);}
+    .ab-ctrl.primary{width:44px;height:44px;background:var(--accent);border-color:var(--accent);color:#fff;font-size:20px;}
+    .ab-ctrl.primary:hover{background:var(--accent-hover);}
+    .ab-bar-wrap{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+    .ab-bar-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .4s linear;}
   </style>
 
   <!-- Firebase SDK -->
@@ -370,7 +397,13 @@
     <div class="mini-events-title">Próximos Eventos</div>
     <div id="miniEventsList"></div>
   </div>
-  <div class="sidebar-footer" id="notesCounter">0 notas</div>
+  <div id="abSidebarControls" class="hidden" style="padding:8px 14px 4px;border-top:1px solid var(--border);flex-shrink:0;">
+    <button class="btn-hear-selected" id="btnHearSelected" onclick="startAudiobook()" disabled>🔊 Ouvir selecionadas (0)</button>
+  </div>
+  <div class="sidebar-footer" style="display:flex;flex-direction:column;gap:7px;flex-shrink:0;">
+    <span id="notesCounter">0 notas</span>
+    <button class="btn-ab-mode" id="btnAbMode" onclick="toggleAudiobookMode()">🎧 Modo Audiobook</button>
+  </div>
 </aside>
 
 <main class="main">
@@ -533,6 +566,22 @@
       <button class="btn-modal-save" onclick="saveApiConfig()">Salvar IA</button>
     </div>
   </div>
+</div>
+
+<!-- MINI PLAYER AUDIOBOOK -->
+<div class="ab-player hidden" id="abPlayer">
+  <div class="ab-player-top">
+    <span style="font-size:15px;flex-shrink:0;">🎧</span>
+    <div class="ab-note-name" id="abNoteName">—</div>
+    <div class="ab-progress-text" id="abProgressText"></div>
+  </div>
+  <div class="ab-ctrls">
+    <button class="ab-ctrl" onclick="abSkip(-1)" title="Nota anterior">⏮</button>
+    <button class="ab-ctrl primary" id="abPlayPauseBtn" onclick="abTogglePause()" title="Pausar/Retomar">⏸</button>
+    <button class="ab-ctrl" onclick="abSkip(1)" title="Próxima nota">⏭</button>
+    <button class="ab-ctrl" onclick="abStop()" title="Parar" style="font-size:13px;">⏹</button>
+  </div>
+  <div class="ab-bar-wrap"><div class="ab-bar-fill" id="abBarFill" style="width:0%"></div></div>
 </div>
 
 <script>
@@ -1209,7 +1258,6 @@
   function mmClearFilter(){mmSetFilter(null);}
 
   function mmBindEvents(canvas){
-    // Mouse
     canvas.addEventListener('mousedown',e=>{
       mmClickStart={x:e.clientX,y:e.clientY,t:Date.now()};
       const pos=mmCoords(e,canvas);
@@ -1234,7 +1282,6 @@
       mmDragging=null;mmPanning=false;canvas.classList.remove('grabbing');
     });
     canvas.addEventListener('wheel',e=>{e.preventDefault();mmZoom(e.deltaY<0?1.1:.9);},{passive:false});
-    // Touch
     canvas.addEventListener('touchstart',e=>{
       e.preventDefault();
       if(e.touches.length===1){
@@ -1318,93 +1365,87 @@
   function scheduleAutoSave(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{const n=findById(currentId);if(n)saveNote(n);refreshMeta();},600);}
 
   // ============================================================
-  // ÁUDIO
+  // AUDIO RECORDING
   // ============================================================
   async function toggleRecording(){isRecording?stopRecording():await startRecording();}
-  async function startRecording(){if(!currentId){alert('Selecione uma nota antes de gravar.');return;}const cfg=getApiConfig();if(!cfg.key){openApiModal();return;}try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});audioChunks=[];mediaRecorder=new MediaRecorder(stream,{mimeType:'audio/webm'});mediaRecorder.ondataavailable=e=>{if(e.data.size>0)audioChunks.push(e.data);};mediaRecorder.onstop=async()=>{stream.getTracks().forEach(t=>t.stop());await transcribeAudio(new Blob(audioChunks,{type:'audio/webm'}));};mediaRecorder.start(200);isRecording=true;updateRecordBtn();}catch{alert('Não foi possível acessar o microfone.');}}
+  async function startRecording(){if(!currentId){alert('Selecione uma nota antes de gravar.');return;}const cfg=getApiConfig();if(!cfg.key){openApiModal();return;}try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});audioChunks=[];mediaRecorder=new MediaRecorder(stream,{mimeType:'audio/webm'});mediaRecorder.ondataavailable=e=>{if(e.data.size>0)audioChunks.push(e.data);};mediaRecorder.onstop=async()=>{stream.getTracks().forEach(t=>t.stop());await transcribeAudio(new Blob(audioChunks,{type:'audio/webm'}));};mediaRecorder.start(200);isRecording=true;updateRecordBtn();}catch{alert('Nao foi possivel acessar o microfone.');}}
   function stopRecording(){if(mediaRecorder&&isRecording){mediaRecorder.stop();isRecording=false;updateRecordBtn();}}
-  function updateRecordBtn(){const b=document.getElementById('btnRecord');if(isRecording){b.classList.add('recording');b.innerHTML='<span class="rec-dot"></span> ⏹ Parar';}else{b.classList.remove('recording');b.innerHTML='🎤 Gravar';}}
+  function updateRecordBtn(){const b=document.getElementById('btnRecord');if(isRecording){b.classList.add('recording');b.innerHTML='<span class="rec-dot"></span> Parar';}else{b.classList.remove('recording');b.innerHTML='Gravar';}}
   async function transcribeAudio(blob){setStatusVisible('transcribeStatus',true);try{const fd=new FormData();fd.append('file',blob,'audio.webm');fd.append('model','whisper-large-v3');fd.append('language','pt');const res=await fetch('https://api.groq.com/openai/v1/audio/transcriptions',{method:'POST',headers:{'Authorization':`Bearer ${getApiConfig().key}`},body:fd});if(!res.ok)throw new Error((await res.json().catch(()=>({}))).error?.message||`Erro ${res.status}`);const{text}=await res.json();if(text?.trim()){const ta=document.getElementById('contentInput');ta.value+=(ta.value?'\n\n':'')+text.trim();onContentChange();}}catch(e){alert(`Erro ao transcrever: ${e.message}`);}finally{setStatusVisible('transcribeStatus',false);}}
 
   // ============================================================
   // UPLOAD
   // ============================================================
   function triggerUpload(){if(!currentId){alert('Selecione uma nota antes de importar.');return;}const i=document.getElementById('fileInput');i.value='';i.click();}
-  async function handleFileSelected(ev){const file=ev.target.files[0];if(!file)return;const ext=file.name.split('.').pop().toLowerCase();if(!['txt','md','csv','pdf'].includes(ext)){alert('Use: .txt, .md, .csv ou .pdf');return;}setUploadLoading(true,`Lendo ${file.name}…`);try{let text=ext==='pdf'?extractTextFromPdf(await readAsArrayBuffer(file)):await readAsText(file);const ta=document.getElementById('contentInput');ta.value+=(ta.value.trim()?'\n\n':'')+`--- 📄 ${file.name} ---\n`+text;onContentChange();}catch(e){alert(`Erro: ${e.message}`);}finally{setUploadLoading(false);}}
+  async function handleFileSelected(ev){const file=ev.target.files[0];if(!file)return;const ext=file.name.split('.').pop().toLowerCase();if(!['txt','md','csv','pdf'].includes(ext)){alert('Use: .txt, .md, .csv ou .pdf');return;}setUploadLoading(true,`Lendo ${file.name}`);try{let text=ext==='pdf'?extractTextFromPdf(await readAsArrayBuffer(file)):await readAsText(file);const ta=document.getElementById('contentInput');ta.value+=(ta.value.trim()?'\n\n':'')+`--- ${file.name} ---\n`+text;onContentChange();}catch(e){alert(`Erro: ${e.message}`);}finally{setUploadLoading(false);}}
   function readAsText(f){return new Promise((ok,err)=>{const r=new FileReader();r.onload=e=>ok(e.target.result);r.onerror=()=>err(new Error('Falha'));r.readAsText(f,'UTF-8');});}
   function readAsArrayBuffer(f){return new Promise((ok,err)=>{const r=new FileReader();r.onload=e=>ok(e.target.result);r.onerror=()=>err(new Error('Falha'));r.readAsArrayBuffer(f);});}
-  function extractTextFromPdf(buf){const raw=new TextDecoder('latin1').decode(new Uint8Array(buf));const lines=[];const btEt=/BT([\s\S]*?)ET/g;let block;while((block=btEt.exec(raw))!==null){const c=block[1];const tj=/\(([^)\\]*(?:\\.[^)\\]*)*)\)\s*(?:Tj|'|")/g;let m;while((m=tj.exec(c))!==null)lines.push(unescapePdf(m[1]));const tjA=/\[([^\]]*)\]\s*TJ/g;let arr;while((arr=tjA.exec(c))!==null){const pts=arr[1].match(/\(([^)\\]*(?:\\.[^)\\]*)*)\)/g);if(pts)lines.push(pts.map(p=>unescapePdf(p.slice(1,-1))).join(''));}}return lines.join('\n').replace(/\n{3,}/g,'\n\n').trim()||'⚠️ Não foi possível extrair texto deste PDF.';}
+  function extractTextFromPdf(buf){const raw=new TextDecoder('latin1').decode(new Uint8Array(buf));const lines=[];const btEt=/BT([\s\S]*?)ET/g;let block;while((block=btEt.exec(raw))!==null){const c=block[1];const tj=/\(([^)\\]*(?:\\.[^)\\]*)*)\)\s*(?:Tj|'|")/g;let m;while((m=tj.exec(c))!==null)lines.push(unescapePdf(m[1]));const tjA=/\[([^\]]*)\]\s*TJ/g;let arr;while((arr=tjA.exec(c))!==null){const pts=arr[1].match(/\(([^)\\]*(?:\\.[^)\\]*)*)\)/g);if(pts)lines.push(pts.map(p=>unescapePdf(p.slice(1,-1))).join(''));}}return lines.join('\n').replace(/\n{3,}/g,'\n\n').trim()||'Nao foi possivel extrair texto deste PDF.';}
   function unescapePdf(s){return s.replace(/\\n/g,'\n').replace(/\\r/g,'\r').replace(/\\t/g,'\t').replace(/\\\\/g,'\\').replace(/\\\(/g,'(').replace(/\\\)/g,')');}
-  function setUploadLoading(on,msg='Processando…'){document.getElementById('uploadStatusText').textContent=msg;setStatusVisible('uploadStatus',on);document.getElementById('btnUpload').classList.toggle('loading',on);}
+  function setUploadLoading(on,msg){if(msg)document.getElementById('uploadStatusText').textContent=msg;setStatusVisible('uploadStatus',on);document.getElementById('btnUpload').classList.toggle('loading',on);}
   function setStatusVisible(id,on){document.getElementById(id).classList.toggle('hidden',!on);}
 
   // ============================================================
   // IA
   // ============================================================
   const AI_PROMPTS={
-    summarize:t=>`Faça um resumo em até 5 bullets em português brasileiro.\n\n${t}`,
+    summarize:t=>'Faca um resumo em ate 5 bullets em portugues brasileiro.\n\n'+t,
     insights:(t,tags)=>{
       const hasCtx=tags&&tags.length&&tags.some(tag=>getTagDesc(tag));
       if(hasCtx){
-        const ctxLines=tags.map(tag=>{const d=getTagDesc(tag);return d?`- #${tag}: ${d}`:`- #${tag}`;}).join('\n');
-        return`Gere insights e conexões não óbvias sobre a nota abaixo em bullets, em português brasileiro.\n\nContexto das categorias desta nota:\n${ctxLines}\n\nUse esse contexto para tornar os insights mais relevantes, específicos e acionáveis para este domínio.\n\nNota:\n${t}`;
+        const ctxLines=tags.map(tag=>{const d=getTagDesc(tag);return d?'- #'+tag+': '+d:'- #'+tag;}).join('\n');
+        return'Gere insights e conexoes nao obvias sobre a nota abaixo em bullets, em portugues brasileiro.\n\nContexto das categorias desta nota:\n'+ctxLines+'\n\nUse esse contexto para tornar os insights mais relevantes, especificos e acionaveis para este dominio.\n\nNota:\n'+t;
       }
-      return`Extraia insights e conexões não óbvias em bullets, em português brasileiro.\n\n${t}`;
+      return'Extraia insights e conexoes nao obvias em bullets, em portugues brasileiro.\n\n'+t;
     },
-    ideas:t=>`Sugira 5 desdobramentos práticos em bullets numerados, em português brasileiro.\n\n${t}`,
-    organize:t=>`Reestruture em: Fatos, Opiniões, Tarefas e Perguntas (ignore vazias), em português brasileiro.\n\n${t}`
+    ideas:t=>'Sugira 5 desdobramentos praticos em bullets numerados, em portugues brasileiro.\n\n'+t,
+    organize:t=>'Reestruture em: Fatos, Opinioes, Tarefas e Perguntas (ignore vazias), em portugues brasileiro.\n\n'+t
   };
-  const AI_TITLES={summarize:'📝 Resumo',insights:'💡 Insights',ideas:'🚀 Ideias',organize:'📂 Organizado'};
+  const AI_TITLES={summarize:'Resumo',insights:'Insights',ideas:'Ideias',organize:'Organizado'};
   async function runAI(action){
     const note=findById(currentId);if(!note)return;
     const content=note.title+'\n'+note.content;
-    if(!content.trim()){alert('A nota está vazia.');return;}
+    if(!content.trim()){alert('A nota esta vazia.');return;}
     const cfg=getApiConfig();if(!cfg.key){openApiModal();return;}
     setAiLoading(true,action);
     try{
-      // Insights recebe as tags da nota para usar o contexto das descrições
-      const prompt=action==='insights'
-        ?AI_PROMPTS.insights(content,note.tags||[])
-        :AI_PROMPTS[action](content);
+      const prompt=action==='insights'?AI_PROMPTS.insights(content,note.tags||[]):AI_PROMPTS[action](content);
       setAiResult(AI_TITLES[action],await callAI(cfg,prompt));
-    }catch(e){setAiResult('Erro',`❌ ${e.message}`);}
+    }catch(e){setAiResult('Erro','Erro: '+e.message);}
     finally{setAiLoading(false,action);}
   }
   async function callAI(cfg,prompt){return cfg.provider==='anthropic'?callAnthropic(cfg,prompt):callOpenAICompat(cfg,prompt);}
-  async function callOpenAICompat(cfg,prompt){const ep={groq:'https://api.groq.com/openai/v1/chat/completions',openai:'https://api.openai.com/v1/chat/completions'};const res=await fetch(ep[cfg.provider],{method:'POST',headers:{'Authorization':`Bearer ${cfg.key}`,'Content-Type':'application/json'},body:JSON.stringify({model:cfg.model,messages:[{role:'user',content:prompt}]})});if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||`HTTP ${res.status}`);}return(await res.json()).choices?.[0]?.message?.content?.trim()??'(vazio)';}
-  async function callAnthropic(cfg,prompt){const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'x-api-key':cfg.key,'anthropic-version':'2023-06-01','Content-Type':'application/json'},body:JSON.stringify({model:cfg.model,max_tokens:1024,messages:[{role:'user',content:prompt}]})});if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||`HTTP ${res.status}`);}return(await res.json()).content?.[0]?.text?.trim()??'(vazio)';}
-  function setAiLoading(on,action){document.querySelectorAll('.btn-ai').forEach(b=>b.disabled=on);if(on){document.getElementById('aiResultPanel').classList.add('open');document.getElementById('aiResultTitle').textContent=AI_TITLES[action];document.getElementById('aiResultBody').innerHTML='<div class="ai-loading"><div class="spinner"></div> Processando…</div>';}}
+  async function callOpenAICompat(cfg,prompt){const ep={groq:'https://api.groq.com/openai/v1/chat/completions',openai:'https://api.openai.com/v1/chat/completions'};const res=await fetch(ep[cfg.provider],{method:'POST',headers:{'Authorization':'Bearer '+cfg.key,'Content-Type':'application/json'},body:JSON.stringify({model:cfg.model,messages:[{role:'user',content:prompt}]})});if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||'HTTP '+res.status);}return(await res.json()).choices?.[0]?.message?.content?.trim()??'(vazio)';}
+  async function callAnthropic(cfg,prompt){const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'x-api-key':cfg.key,'anthropic-version':'2023-06-01','Content-Type':'application/json'},body:JSON.stringify({model:cfg.model,max_tokens:1024,messages:[{role:'user',content:prompt}]})});if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||'HTTP '+res.status);}return(await res.json()).content?.[0]?.text?.trim()??'(vazio)';}
+  function setAiLoading(on,action){document.querySelectorAll('.btn-ai').forEach(b=>b.disabled=on);if(on){document.getElementById('aiResultPanel').classList.add('open');document.getElementById('aiResultTitle').textContent=AI_TITLES[action];document.getElementById('aiResultBody').innerHTML='<div class="ai-loading"><div class="spinner"></div> Processando...</div>';}}
   function setAiResult(title,text){document.getElementById('aiResultPanel').classList.add('open');document.getElementById('aiResultTitle').textContent=title;document.getElementById('aiResultBody').innerHTML=esc(text).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');}
   function closeAiPanel(){document.getElementById('aiResultPanel').classList.remove('open');}
 
   // ============================================================
-  // PARSER DE LINGUAGEM NATURAL EM PORTUGUÊS
+  // PARSER DE LINGUAGEM NATURAL EM PORTUGUES
   // ============================================================
-  const PT_MONTHS=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-  const PT_DAYS  =['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+  const PT_MONTHS=['janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  const PT_DAYS=['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
 
   function parseEventText(raw){
     let text=raw.trim();const now=new Date();let date=null,hour=null,minute=null;
-    // Detecta horário — usa (?:^|\s) em vez de \b antes de acentos (à), pois \b não funciona com UTF-8
-    // Formatos aceitos: "às 15:00", "as 15h", "às 9h30", "15h", "15h30", "15:00"
-    const tM=text.match(/(?:^|\s)(?:às?|as)\s+(\d{1,2}):(\d{2})(?!\d)/i)
-            ||text.match(/(?:^|\s)(?:às?|as)\s+(\d{1,2})h(\d{2})?(?!\w)/i)
+    const tM=text.match(/(?:^|\s)(?:\u00e0s?|as)\s+(\d{1,2}):(\d{2})(?!\d)/i)
+            ||text.match(/(?:^|\s)(?:\u00e0s?|as)\s+(\d{1,2})h(\d{2})?(?!\w)/i)
             ||text.match(/\b(\d{1,2})h(\d{2})?(?!\w)/i)
             ||text.match(/\b(\d{1,2}):(\d{2})(?!\d)/);
     if(tM){const h=parseInt(tM[1]);if(h>=0&&h<=23){hour=h;minute=tM[2]?parseInt(tM[2]):0;text=text.replace(tM[0].trim(),'').trim();}else{hour=null;minute=null;}}
-    // Detecta data relativa — sem \b em palavras com acento (ã não é \w)
     if(/\bhoje\b/i.test(text)){date=new Date(now.getFullYear(),now.getMonth(),now.getDate());text=text.replace(/\bhoje\b/i,'').trim();}
-    else if(/(amanhã|amanha)/i.test(text)){date=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1);text=text.replace(/(amanhã|amanha)/i,'').trim();}
-    else if(/(depois\s+de\s+aman[h]?[ã|a])/i.test(text)){date=new Date(now.getFullYear(),now.getMonth(),now.getDate()+2);text=text.replace(/(depois\s+de\s+aman[h]?[ã|a])/i,'').trim();}
+    else if(/(amanh\u00e3|amanha)/i.test(text)){date=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1);text=text.replace(/(amanh\u00e3|amanha)/i,'').trim();}
+    else if(/(depois\s+de\s+aman[h]?[\u00e3a])/i.test(text)){date=new Date(now.getFullYear(),now.getMonth(),now.getDate()+2);text=text.replace(/(depois\s+de\s+aman[h]?[\u00e3a])/i,'').trim();}
     else{
       const dM=text.match(/\b(\d{1,2})\/(\d{1,2})(?:\/(\d{4}|\d{2}))?\b/);
       if(dM){const d=parseInt(dM[1]),mo=parseInt(dM[2])-1,yr=dM[3]?(dM[3].length===2?2000+parseInt(dM[3]):parseInt(dM[3])):now.getFullYear();date=new Date(yr,mo,d);text=text.replace(dM[0],'').trim();}
       else{
-        const mP=new RegExp(`\\b(\\d{1,2})\\s+de\\s+(${PT_MONTHS.join('|')})(?:\\s+de\\s+(\\d{4}))?\\b`,'i');
+        const mP=new RegExp('\\b(\\d{1,2})\\s+de\\s+('+PT_MONTHS.join('|')+')(?:\\s+de\\s+(\\d{4}))?\\b','i');
         const mM=text.match(mP);
         if(mM){const d=parseInt(mM[1]),mo=PT_MONTHS.findIndex(m=>m.toLowerCase()===mM[2].toLowerCase()),yr=mM[3]?parseInt(mM[3]):now.getFullYear();date=new Date(yr,mo,d);text=text.replace(mM[0],'').trim();}
         else{
-          const dP=new RegExp(`\\b(?:próxim[ao]?|essa?|est[ae]|na|no)?\\s*(${PT_DAYS.join('|')})(?:-feira)?\\b`,'i');
+          const dP=new RegExp('\\b(?:pr\u00f3xim[ao]?|essa?|est[ae]|na|no)?\\s*('+PT_DAYS.join('|')+')(?:-feira)?\\b','i');
           const dM2=text.match(dP);
           if(dM2){const tgt=PT_DAYS.findIndex(d=>d.toLowerCase()===dM2[1].toLowerCase());let diff=tgt-now.getDay();if(diff<=0)diff+=7;date=new Date(now.getFullYear(),now.getMonth(),now.getDate()+diff);text=text.replace(dM2[0],'').trim();}
         }
@@ -1412,27 +1453,24 @@
     }
     let datetime=null;
     if(date){const h=hour!==null?hour:9,m=minute!==null?minute:0;datetime=new Date(date.getFullYear(),date.getMonth(),date.getDate(),h,m);}
-    text=text.replace(/^\s*[-–—:]\s*/,'').replace(/\s*[-–—:]\s*$/,'').replace(/(?:às?|as)\s*/gi,'').replace(/\s{2,}/g,' ').trim();
+    text=text.replace(/^\s*[-\u2013\u2014:]\s*/,'').replace(/\s*[-\u2013\u2014:]\s*$/,'').replace(/(?:\u00e0s?|as)\s*/gi,'').replace(/\s{2,}/g,' ').trim();
     let title=text,description='';
-    const si=text.search(/\s*[-–—]\s*|\n/);
-    if(si>2){title=text.substring(0,si).trim();description=text.substring(si).replace(/^[-–—\s]+/,'').trim();}
-    return{title:title||'Evento sem título',description,datetime:datetime?datetime.toISOString():null,rawText:raw.trim()};
+    const si=text.search(/\s*[-\u2013\u2014]\s*|\n/);
+    if(si>2){title=text.substring(0,si).trim();description=text.substring(si).replace(/^[-\u2013\u2014\s]+/,'').trim();}
+    return{title:title||'Evento sem titulo',description,datetime:datetime?datetime.toISOString():null,rawText:raw.trim()};
   }
 
   // ============================================================
   // CRUD EVENTOS
   // ============================================================
   function addEventFromInput(){
-    if(!currentUser){alert('Faça login primeiro.');return;}
+    if(!currentUser){alert('Faca login primeiro.');return;}
     const ta=document.getElementById('eventTextarea');const raw=ta.value.trim();if(!raw)return;
     const p=parseEventText(raw);
     const ev={id:String(Date.now()),title:p.title,description:p.description,datetime:p.datetime,rawText:p.rawText,createdAt:new Date().toISOString(),gcalId:null};
     saveEvent(ev);ta.value='';
-    if(isGcalConnected()&&ev.datetime){
-      syncOneToGcal(ev.id);
-    }else if(isGcalConnected()&&!ev.datetime){
-      showToast('⚠️ Evento sem data — não enviado ao Google Calendar. Use: "hoje", "amanhã", "15/04", "segunda", etc.');
-    }
+    if(isGcalConnected()&&ev.datetime){syncOneToGcal(ev.id);}
+    else if(isGcalConnected()&&!ev.datetime){showToast('Evento sem data nao enviado ao Google Calendar.');}
   }
   function onEventKeydown(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();addEventFromInput();}}
   function deleteEvent(id){if(!confirm('Excluir este evento?'))return;removeEventDb(id);}
@@ -1441,26 +1479,26 @@
   // ICS
   // ============================================================
   function toIcsDate(iso){return iso.replace(/[-:]/g,'').split('.')[0];}
-  function buildIcsEvent(ev){const s=new Date(ev.datetime||new Date());const e=new Date(s.getTime()+3600000);return['BEGIN:VEVENT',`DTSTART:${toIcsDate(s.toISOString())}`,`DTEND:${toIcsDate(e.toISOString())}`,`SUMMARY:${ev.title.replace(/\n/g,'\\n')}`,ev.description?`DESCRIPTION:${ev.description.replace(/\n/g,'\\n')}`:'',`UID:${ev.id}@durando-mind`,'END:VEVENT'].filter(Boolean).join('\r\n');}
+  function buildIcsEvent(ev){const s=new Date(ev.datetime||new Date());const e=new Date(s.getTime()+3600000);return['BEGIN:VEVENT','DTSTART:'+toIcsDate(s.toISOString()),'DTEND:'+toIcsDate(e.toISOString()),'SUMMARY:'+ev.title.replace(/\n/g,'\\n'),ev.description?'DESCRIPTION:'+ev.description.replace(/\n/g,'\\n'):'','UID:'+ev.id+'@durando-mind','END:VEVENT'].filter(Boolean).join('\r\n');}
   function buildIcsFile(evs){return['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Durando Mind//PT','CALSCALE:GREGORIAN','METHOD:PUBLISH',...evs.map(buildIcsEvent),'END:VCALENDAR'].join('\r\n');}
   function downloadIcs(content,name){const b=new Blob([content],{type:'text/calendar;charset=utf-8'});const u=URL.createObjectURL(b);const a=Object.assign(document.createElement('a'),{href:u,download:name});document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(u);a.remove();},1000);}
   function exportAllIcs(){if(!events.length){alert('Nenhum evento para exportar.');return;}downloadIcs(buildIcsFile(events),'durando-mind-agenda.ics');}
 
   // ============================================================
-  // RENDERIZAÇÃO — AGENDA
+  // RENDERIZACAO AGENDA
   // ============================================================
   function renderAgendaTab(){
     const list=document.getElementById('eventsList');
     const count=document.getElementById('eventsCount');
     const now=new Date();
-    count.textContent=`${events.length} ${events.length===1?'evento':'eventos'}`;
+    count.textContent=events.length+' '+(events.length===1?'evento':'eventos');
     updateGcalButton();
-    if(!events.length){list.innerHTML=`<div class="events-empty"><div class="events-empty-icon">📅</div><div class="events-empty-text">Nenhum evento ainda</div><div class="events-empty-sub">Digite acima para adicionar seu primeiro evento</div></div>`;return;}
+    if(!events.length){list.innerHTML='<div class="events-empty"><div class="events-empty-icon">&#128197;</div><div class="events-empty-text">Nenhum evento ainda</div><div class="events-empty-sub">Digite acima para adicionar seu primeiro evento</div></div>';return;}
     const upcoming=events.filter(e=>!e.datetime||new Date(e.datetime)>=now);
     const past=events.filter(e=>e.datetime&&new Date(e.datetime)<now);
     let html='';
-    if(upcoming.length){html+=`<div class="events-section-title">Próximos eventos</div>`;html+=upcoming.map(e=>renderEventCard(e,now)).join('');}
-    if(past.length){html+=`<div class="events-section-title" style="margin-top:16px;">Eventos passados</div>`;html+=past.map(e=>renderEventCard(e,now)).join('');}
+    if(upcoming.length){html+='<div class="events-section-title">Proximos eventos</div>';html+=upcoming.map(e=>renderEventCard(e,now)).join('');}
+    if(past.length){html+='<div class="events-section-title" style="margin-top:16px;">Eventos passados</div>';html+=past.map(e=>renderEventCard(e,now)).join('');}
     list.innerHTML=html;
   }
 
@@ -1470,119 +1508,296 @@
     const isToday=dt&&sameDay(dt,now);
     const isSoon=diffH!==null&&diffH>0&&diffH<=24;
     const isPast=dt&&dt<now;
-    const dayNum=dt?dt.getDate():'—';
+    const dayNum=dt?dt.getDate():'--';
     const monthStr=dt?dt.toLocaleDateString('pt-BR',{month:'short'}).replace('.',''):'sem data';
     const timeStr=dt?dt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):null;
     let badge='';
-    if(isToday)badge=`<span class="mini-event-badge badge-today">Hoje</span>`;
-    else if(isSoon)badge=`<span class="mini-event-badge badge-soon">Em breve</span>`;
-    const cardClass=`event-card${isToday?' today':isSoon?' soon':isPast?' past':''}`;
-    const syncBadge=ev.gcalId?`<span class="sync-badge synced">✓ GCal</span>`:`<span class="sync-badge pending">não sincronizado</span>`;
-    const gcalBtn=isGcalConnected()&&ev.datetime&&!ev.gcalId?`<button class="btn-event-action" onclick="syncOneToGcal('${ev.id}')">📅 Sincronizar</button>`:'';
-    const delBtn=`<button class="btn-event-action danger" onclick="deleteEvent('${ev.id}')">🗑 Excluir</button>`;
-    const icsBtn=`<button class="btn-event-action" onclick="(()=>{const ev=events.find(e=>e.id==='${ev.id}');if(ev)downloadIcs(buildIcsFile([ev]),ev.title.slice(0,30)+'.ics');})()">⬇ .ics</button>`;
-    return`<div class="${cardClass}">
-      <div class="event-date-col"><div class="event-day">${dayNum}</div><div class="event-month">${monthStr}</div>${timeStr?`<span class="event-time-badge">${timeStr}</span>`:''}</div>
-      <div class="event-body">
-        <div class="event-title">${esc(ev.title)}${badge}</div>
-        ${ev.description?`<div class="event-desc">${esc(ev.description)}</div>`:''}
-        <div class="event-actions">${gcalBtn}${icsBtn}${delBtn}${syncBadge}</div>
-      </div>
-    </div>`;
+    if(isToday)badge='<span class="mini-event-badge badge-today">Hoje</span>';
+    else if(isSoon)badge='<span class="mini-event-badge badge-soon">Em breve</span>';
+    const cardClass='event-card'+(isToday?' today':isSoon?' soon':isPast?' past':'');
+    const syncBadge=ev.gcalId?'<span class="sync-badge synced">GCal</span>':'<span class="sync-badge pending">nao sincronizado</span>';
+    const gcalBtn=isGcalConnected()&&ev.datetime&&!ev.gcalId?'<button class="btn-event-action" onclick="syncOneToGcal(\''+ev.id+'\')">Sincronizar</button>':'';
+    const delBtn='<button class="btn-event-action danger" onclick="deleteEvent(\''+ev.id+'\')">Excluir</button>';
+    const icsBtn='<button class="btn-event-action" onclick="(function(){var e=events.find(function(x){return x.id===\''+ev.id+'\';});if(e)downloadIcs(buildIcsFile([e]),e.title.slice(0,30)+\'.ics\');})()">ICS</button>';
+    return '<div class="'+cardClass+'">'
+      +'<div class="event-date-col"><div class="event-day">'+dayNum+'</div><div class="event-month">'+monthStr+'</div>'+(timeStr?'<span class="event-time-badge">'+timeStr+'</span>':'')+'</div>'
+      +'<div class="event-body">'
+      +'<div class="event-title">'+esc(ev.title)+badge+'</div>'
+      +(ev.description?'<div class="event-desc">'+esc(ev.description)+'</div>':'')
+      +'<div class="event-actions">'+gcalBtn+icsBtn+delBtn+syncBadge+'</div>'
+      +'</div></div>';
   }
 
   function sameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
 
   // ============================================================
-  // MINI EVENTOS — SIDEBAR
+  // MINI EVENTOS SIDEBAR
   // ============================================================
   function renderMiniEvents(){
-    const section=document.getElementById('miniEventsSection');const list=document.getElementById('miniEventsList');const now=new Date();
+    const section=document.getElementById('miniEventsSection');
+    const list=document.getElementById('miniEventsList');
+    const now=new Date();
     const upcoming=events.filter(e=>e.datetime&&new Date(e.datetime)>=now).slice(0,3);
     if(!upcoming.length){section.classList.add('hidden');return;}
     section.classList.remove('hidden');
-    list.innerHTML=upcoming.map(ev=>{const dt=new Date(ev.datetime);const isToday=sameDay(dt,now);const diffH=(dt-now)/3600000;const isSoon=diffH>0&&diffH<=24;const badge=isToday?`<span class="mini-event-badge badge-today">Hoje</span>`:isSoon?`<span class="mini-event-badge badge-soon">Em breve</span>`:'';const timeStr=dt.toLocaleString('pt-BR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});return`<div class="mini-event-card${isToday?' today':isSoon?' soon':''}" onclick="switchTab('agenda')"><div class="mini-event-name">${esc(ev.title)}${badge}</div><div class="mini-event-time">${timeStr}</div></div>`;}).join('');
+    list.innerHTML=upcoming.map(ev=>{
+      const dt=new Date(ev.datetime);
+      const isToday=sameDay(dt,now);
+      const diffH=(dt-now)/3600000;
+      const isSoon=diffH>0&&diffH<=24;
+      const badge=isToday?'<span class="mini-event-badge badge-today">Hoje</span>':isSoon?'<span class="mini-event-badge badge-soon">Em breve</span>':'';
+      const timeStr=dt.toLocaleString('pt-BR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+      return'<div class="mini-event-card'+(isToday?' today':isSoon?' soon':'')+'" onclick="switchTab(\'agenda\')"><div class="mini-event-name">'+esc(ev.title)+badge+'</div><div class="mini-event-time">'+timeStr+'</div></div>';
+    }).join('');
   }
 
   // ============================================================
-  // RENDERIZAÇÃO — NOTAS
+  // RENDERIZACAO NOTAS
   // ============================================================
   function renderSidebar(){renderTagFilter();renderNoteList();if(tagsSidebarOpen)renderTagsSidebar();}
-  function renderTagFilter(){const area=document.getElementById('tagFilterArea');const tags=getAllTags();if(!tags.length){area.innerHTML='';return;}area.innerHTML=tags.map(t=>{const{bg,color}=tagColor(t);return`<span class="chip chip-btn${t===activeTag?' active-filter':''}" style="background:${bg};color:${color};" onclick="setActiveTag('${t}')">#${t}</span>`;}).join('');}
-  function renderNoteList(){const list=document.getElementById('notesList');const counter=document.getElementById('notesCounter');const visible=getFilteredNotes();const total=notes.length;counter.textContent=(searchQuery||activeTag)?`${visible.length} de ${total} ${total===1?'nota':'notas'}`:`${total} ${total===1?'nota':'notas'}`;if(!total){list.innerHTML=`<div class="empty-list">Nenhuma nota ainda.<br>Clique em "Nova Nota"!</div>`;return;}if(!visible.length){list.innerHTML=`<div class="empty-list">Nenhuma nota encontrada.</div>`;return;}list.innerHTML=visible.map(n=>{const tagsH=n.tags.length?`<div class="note-card-tags">${n.tags.map(t=>{const{bg,color}=tagColor(t);return`<span class="chip" style="background:${bg};color:${color};">#${t}</span>`;}).join('')}</div>`:'';return`<div class="note-card${n.id===currentId?' active':''}" onclick="openNote('${n.id}')"><div class="note-card-title">${esc(n.title)||'Sem título'}</div><div class="note-card-preview">${esc(n.content)||'Nota vazia…'}</div><div class="note-card-date">${relativeTime(n.updatedAt)}</div>${tagsH}</div>`;}).join('');}
-  function renderEditor(){const emptyEl=document.getElementById('emptyState');const editorEl=document.getElementById('editor');if(!currentId){emptyEl.classList.remove('hidden');editorEl.classList.add('hidden');return;}const note=findById(currentId);if(!note)return;emptyEl.classList.add('hidden');editorEl.classList.remove('hidden');document.getElementById('titleInput').value=note.title;document.getElementById('contentInput').value=note.content;closeAiPanel();refreshMeta();renderTagsInEditor();updateRecordBtn();}
+  function renderTagFilter(){
+    const area=document.getElementById('tagFilterArea');
+    const tags=getAllTags();
+    if(!tags.length){area.innerHTML='';return;}
+    area.innerHTML=tags.map(t=>{
+      const c=tagColor(t);
+      return '<span class="chip chip-btn'+(t===activeTag?' active-filter':'')+'" style="background:'+c.bg+';color:'+c.color+';" onclick="setActiveTag(\''+t+'\')">#'+t+'</span>';
+    }).join('');
+  }
+  function renderNoteList(){
+    const list=document.getElementById('notesList');
+    const counter=document.getElementById('notesCounter');
+    const visible=getFilteredNotes();
+    const total=notes.length;
+    counter.textContent=(searchQuery||activeTag)?(visible.length+' de '+total+' '+(total===1?'nota':'notas')):(total+' '+(total===1?'nota':'notas'));
+    if(!total){list.innerHTML='<div class="empty-list">Nenhuma nota ainda.<br>Clique em "Nova Nota"!</div>';return;}
+    if(!visible.length){list.innerHTML='<div class="empty-list">Nenhuma nota encontrada.</div>';return;}
+    if(audiobookMode){
+      list.innerHTML=visible.map(n=>{
+        const sel=selectedNoteIds.has(n.id);
+        const tagsH=n.tags.length?'<div class="note-card-tags">'+n.tags.map(t=>{const c=tagColor(t);return'<span class="chip" style="background:'+c.bg+';color:'+c.color+';">#'+t+'</span>';}).join('')+'</div>':'';
+        return '<div class="note-card-wrap">'
+          +'<div class="note-card'+(sel?' ab-selected':'')+'" onclick="toggleNoteSelect(\''+n.id+'\',event)" style="padding-right:36px;cursor:pointer;">'
+          +'<div class="note-card-title">'+esc(n.title||'Sem titulo')+'</div>'
+          +'<div class="note-card-preview">'+esc(n.content||'Nota vazia')+'</div>'
+          +'<div class="note-card-date">'+relativeTime(n.updatedAt)+'</div>'
+          +tagsH+'</div>'
+          +'<div class="ab-checkbox'+(sel?' checked':'')+'">'+(sel?'&#10003;':'')+'</div></div>';
+      }).join('');
+    } else {
+      list.innerHTML=visible.map(n=>{
+        const tagsH=n.tags.length?'<div class="note-card-tags">'+n.tags.map(t=>{const c=tagColor(t);return'<span class="chip" style="background:'+c.bg+';color:'+c.color+';">#'+t+'</span>';}).join('')+'</div>':'';
+        return '<div class="note-card'+(n.id===currentId?' active':'')+'" onclick="openNote(\''+n.id+'\')">'
+          +'<div class="note-card-title">'+esc(n.title||'Sem titulo')+'</div>'
+          +'<div class="note-card-preview">'+esc(n.content||'Nota vazia')+'</div>'
+          +'<div class="note-card-date">'+relativeTime(n.updatedAt)+'</div>'
+          +tagsH+'</div>';
+      }).join('');
+    }
+  }
+  function renderEditor(){
+    const emptyEl=document.getElementById('emptyState');
+    const editorEl=document.getElementById('editor');
+    if(!currentId){emptyEl.classList.remove('hidden');editorEl.classList.add('hidden');return;}
+    const note=findById(currentId);if(!note)return;
+    emptyEl.classList.add('hidden');editorEl.classList.remove('hidden');
+    document.getElementById('titleInput').value=note.title;
+    document.getElementById('contentInput').value=note.content;
+    closeAiPanel();refreshMeta();renderTagsInEditor();updateRecordBtn();
+  }
   function renderTagsInEditor(){
     const note=findById(currentId);const row=document.getElementById('tagsRow');if(!note||!row)return;
-    const chips=note.tags.map(t=>{const{bg,color}=tagColor(t);return`<span class="chip" style="background:${bg};color:${color};">#${t}<button class="chip-remove" onclick="removeTag('${t}')">✕</button></span>`;}).join('');
-    row.innerHTML=chips+`<input class="tag-input" id="tagInput" type="text" placeholder="+ adicionar tag" maxlength="30" onkeydown="onTagKeydown(event)"/>`;
-    // Mostrar/ocultar seção de contexto conforme a nota tem tags
+    const chips=note.tags.map(t=>{const c=tagColor(t);return'<span class="chip" style="background:'+c.bg+';color:'+c.color+';">#'+t+'<button class="chip-remove" onclick="removeTag(\''+t+'\')">x</button></span>';}).join('');
+    row.innerHTML=chips+'<input class="tag-input" id="tagInput" type="text" placeholder="+ adicionar tag" maxlength="30" onkeydown="onTagKeydown(event)"/>';
     const sec=document.getElementById('tagCtxSection');
     if(sec){sec.classList.toggle('hidden',!note.tags||!note.tags.length);}
-    // Se os inputs estiverem abertos, atualizar com as tags atuais
     const inputs=document.getElementById('tagCtxInputs');
     if(inputs&&!inputs.classList.contains('hidden'))renderTagCtxInputs(note.tags);
   }
   function onTagKeydown(e){if(e.key==='Enter'){e.preventDefault();addTag(e.target.value);e.target.value='';}}
-  function refreshMeta(){const n=findById(currentId);if(!n)return;document.getElementById('noteMeta').textContent=`Criada ${relativeTime(n.createdAt)}  ·  Atualizada ${relativeTime(n.updatedAt)}`;}
+  function refreshMeta(){const n=findById(currentId);if(!n)return;document.getElementById('noteMeta').textContent='Criada '+relativeTime(n.createdAt)+'  ·  Atualizada '+relativeTime(n.updatedAt);}
 
   // ============================================================
-  // TOAST (notificação temporária)
+  // AUDIOBOOK MODE
+  // ============================================================
+  let audiobookMode=false;
+  let selectedNoteIds=new Set();
+  let abQueue=[];
+  let abCurrentIdx=0;
+  let abAudio=null;
+  let abPlaying=false;
+  let abPaused=false;
+
+  function toggleAudiobookMode(){
+    audiobookMode=!audiobookMode;
+    selectedNoteIds.clear();
+    const btn=document.getElementById('btnAbMode');
+    const ctrl=document.getElementById('abSidebarControls');
+    btn.classList.toggle('active',audiobookMode);
+    btn.textContent=audiobookMode?'x Sair do Audiobook':'Modo Audiobook';
+    ctrl.classList.toggle('hidden',!audiobookMode);
+    updateHearBtn();
+    renderNoteList();
+  }
+
+  function toggleNoteSelect(id,e){
+    if(e)e.stopPropagation();
+    if(selectedNoteIds.has(id))selectedNoteIds.delete(id);
+    else selectedNoteIds.add(id);
+    updateHearBtn();
+    renderNoteList();
+  }
+
+  function updateHearBtn(){
+    const btn=document.getElementById('btnHearSelected');
+    if(!btn)return;
+    const n=selectedNoteIds.size;
+    btn.textContent='Ouvir selecionadas ('+n+')';
+    btn.disabled=(n===0);
+  }
+
+  async function startAudiobook(){
+    if(!selectedNoteIds.size)return;
+    const cfg=getApiConfig();
+    if(!cfg.key||cfg.provider!=='groq'){
+      alert('O Modo Audiobook requer a API da Groq. Configure no botao API.');
+      openApiModal();return;
+    }
+    abQueue=getFilteredNotes().filter(n=>selectedNoteIds.has(n.id));
+    if(!abQueue.length)return;
+    abCurrentIdx=0;abPlaying=true;abPaused=false;
+    document.getElementById('abPlayer').classList.remove('hidden');
+    await abPlayCurrent();
+  }
+
+  async function abPlayCurrent(){
+    if(abCurrentIdx<0||abCurrentIdx>=abQueue.length){abStop();return;}
+    const note=abQueue[abCurrentIdx];
+    updatePlayer();
+    const cfg=getApiConfig();
+    const raw=((note.title?note.title+'.\n\n':'')+(note.content||'')).trim();
+    const text=raw.slice(0,4000)||'Nota sem conteudo.';
+    const playBtn=document.getElementById('abPlayPauseBtn');
+    if(playBtn){playBtn.textContent='...';playBtn.disabled=true;}
+    try{
+      const res=await fetch('https://api.groq.com/openai/v1/audio/speech',{
+        method:'POST',
+        headers:{'Authorization':'Bearer '+cfg.key,'Content-Type':'application/json'},
+        body:JSON.stringify({model:'playai-tts',input:text,voice:'Celeste-PlayAI',response_format:'mp3'})
+      });
+      if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err?.error?.message||'Erro '+res.status);}
+      const blob=await res.blob();
+      const url=URL.createObjectURL(blob);
+      if(abAudio){abAudio.pause();if(abAudio._blobUrl)URL.revokeObjectURL(abAudio._blobUrl);}
+      abAudio=new Audio(url);abAudio._blobUrl=url;
+      abAudio.addEventListener('timeupdate',()=>{
+        if(!abAudio.duration)return;
+        const fill=document.getElementById('abBarFill');
+        if(fill)fill.style.width=((abAudio.currentTime/abAudio.duration)*100)+'%';
+      });
+      abAudio.addEventListener('ended',async()=>{
+        abCurrentIdx++;
+        if(abCurrentIdx<abQueue.length)await abPlayCurrent();
+        else{abStop();showToast('Audiobook concluido!');}
+      });
+      abAudio.addEventListener('error',()=>{showToast('Erro ao reproduzir audio.');abStop();});
+      if(playBtn){playBtn.textContent='pause';playBtn.disabled=false;}
+      abPaused=false;abAudio.play();
+    }catch(e){
+      if(playBtn){playBtn.textContent='pause';playBtn.disabled=false;}
+      showToast('Erro TTS: '+e.message);abStop();
+    }
+  }
+
+  function abTogglePause(){
+    if(!abAudio)return;
+    const btn=document.getElementById('abPlayPauseBtn');
+    if(abPaused){abAudio.play();abPaused=false;if(btn)btn.textContent='pause';}
+    else{abAudio.pause();abPaused=true;if(btn)btn.textContent='play';}
+  }
+
+  function abSkip(dir){
+    if(abAudio){abAudio.pause();abAudio=null;}
+    abCurrentIdx=Math.max(0,Math.min(abQueue.length-1,abCurrentIdx+dir));
+    abPaused=false;abPlayCurrent();
+  }
+
+  function abStop(){
+    if(abAudio){abAudio.pause();abAudio=null;}
+    abPlaying=false;abPaused=false;abQueue=[];abCurrentIdx=0;
+    const fill=document.getElementById('abBarFill');if(fill)fill.style.width='0%';
+    document.getElementById('abPlayer').classList.add('hidden');
+  }
+
+  function updatePlayer(){
+    const note=abQueue[abCurrentIdx];if(!note)return;
+    const nameEl=document.getElementById('abNoteName');
+    const progEl=document.getElementById('abProgressText');
+    const fill=document.getElementById('abBarFill');
+    if(nameEl)nameEl.textContent=note.title||'Sem titulo';
+    if(progEl)progEl.textContent=(abCurrentIdx+1)+' / '+abQueue.length;
+    if(fill)fill.style.width='0%';
+  }
+
+  // ============================================================
+  // TOAST
   // ============================================================
   function showToast(msg){
     let t=document.getElementById('toast');
-    if(!t){t=document.createElement('div');t.id='toast';Object.assign(t.style,{position:'fixed',bottom:'24px',left:'50%',transform:'translateX(-50%)',background:'#1b1b27',border:'1px solid #4285f4',color:'#e6e6f0',padding:'10px 20px',borderRadius:'10px',fontSize:'13px',fontWeight:'600',zIndex:'9999',transition:'opacity .3s',boxShadow:'0 4px 20px rgba(0,0,0,.4)'});document.body.appendChild(t);}
+    if(!t){
+      t=document.createElement('div');t.id='toast';
+      Object.assign(t.style,{position:'fixed',bottom:'80px',left:'50%',transform:'translateX(-50%)',
+        background:'#1b1b27',border:'1px solid #4285f4',color:'#e6e6f0',padding:'10px 20px',
+        borderRadius:'10px',fontSize:'13px',fontWeight:'600',zIndex:'9999',
+        transition:'opacity .3s',boxShadow:'0 4px 20px rgba(0,0,0,.4)'});
+      document.body.appendChild(t);
+    }
     t.textContent=msg;t.style.opacity='1';
     clearTimeout(t._timer);t._timer=setTimeout(()=>{t.style.opacity='0';},3000);
   }
 
   // ============================================================
-  // UTILITÁRIOS
+  // UTILITARIOS
   // ============================================================
   function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-  function relativeTime(iso){const d=Date.now()-new Date(iso).getTime();const m=Math.floor(d/60e3),h=Math.floor(d/3600e3),dd=Math.floor(d/86400e3);if(m<1)return'agora mesmo';if(m<60)return`há ${m} min`;if(h<24)return`há ${h}h`;if(dd===1)return'ontem';if(dd<7)return`há ${dd} dias`;return new Date(iso).toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});}
+  function relativeTime(iso){
+    const d=Date.now()-new Date(iso).getTime();
+    const m=Math.floor(d/60e3),h=Math.floor(d/3600e3),dd=Math.floor(d/86400e3);
+    if(m<1)return'agora mesmo';if(m<60)return'ha '+m+' min';if(h<24)return'ha '+h+'h';
+    if(dd===1)return'ontem';if(dd<7)return'ha '+dd+' dias';
+    return new Date(iso).toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
+  }
 
   init();
 
   // ============================================================
-  // PWA — Registro do Service Worker
+  // PWA Service Worker
   // ============================================================
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
+  if('serviceWorker' in navigator){
+    window.addEventListener('load',()=>{
       navigator.serviceWorker.register('./sw.js')
-        .then(reg => {
-          console.log('[PWA] Service Worker registrado:', reg.scope);
-
-          // Notifica quando há uma nova versão disponível
-          reg.addEventListener('updatefound', () => {
-            const newWorker = reg.installing;
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                showToast('🔄 Nova versão disponível! Recarregue para atualizar.');
-              }
+        .then(reg=>{
+          console.log('[PWA] SW registrado:',reg.scope);
+          reg.addEventListener('updatefound',()=>{
+            const nw=reg.installing;
+            nw.addEventListener('statechange',()=>{
+              if(nw.state==='installed'&&navigator.serviceWorker.controller)
+                showToast('Nova versao disponivel! Recarregue para atualizar.');
             });
           });
-        })
-        .catch(err => console.warn('[PWA] Falha ao registrar SW:', err));
+        }).catch(err=>console.warn('[PWA] Falha ao registrar SW:',err));
     });
   }
 
-  // ============================================================
-  // PWA — Botão "Instalar App" (prompt nativo)
-  // ============================================================
-  let deferredInstallPrompt = null;
-  window.addEventListener('beforeinstallprompt', e => {
-    e.preventDefault();
-    deferredInstallPrompt = e;
-    // Mostra toast convidando a instalar
-    setTimeout(() => {
-      showToast('📲 Instale o Durando Mind na sua tela inicial!');
-    }, 2500);
+  let deferredInstallPrompt=null;
+  window.addEventListener('beforeinstallprompt',e=>{
+    e.preventDefault();deferredInstallPrompt=e;
+    setTimeout(()=>showToast('Instale o Durando Mind na sua tela inicial!'),2500);
+  });
+  window.addEventListener('appinstalled',()=>{
+    deferredInstallPrompt=null;showToast('Durando Mind instalado com sucesso!');
   });
 
-  window.addEventListener('appinstalled', () => {
-    deferredInstallPrompt = null;
-    showToast('✅ Durando Mind instalado com sucesso!');
-  });
 </script>
 </body>
 </html>
