@@ -318,18 +318,25 @@
     .btn-hear-selected:hover{background:var(--accent-hover);}
     .btn-hear-selected:disabled{opacity:.4;pointer-events:none;}
     /* Mini Player */
-    .ab-player{position:fixed;bottom:0;left:0;right:0;background:#13131b;border-top:2px solid var(--border-accent);padding:10px 20px 14px;display:flex;flex-direction:column;gap:8px;z-index:200;box-shadow:0 -4px 28px rgba(0,0,0,.6);}
+    /* Mini Player redesign */
+    .ab-player{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(135deg,#13131b 0%,#1a1630 100%);border-top:1px solid rgba(123,104,238,.4);padding:14px 28px 18px;display:flex;flex-direction:column;gap:10px;z-index:200;box-shadow:0 -8px 40px rgba(123,104,238,.2);}
     .ab-player.hidden{display:none!important;}
-    .ab-player-top{display:flex;align-items:center;gap:12px;}
-    .ab-note-name{flex:1;font-size:13px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .ab-progress-text{font-size:11px;color:var(--text-muted);white-space:nowrap;flex-shrink:0;}
-    .ab-ctrls{display:flex;align-items:center;justify-content:center;gap:10px;}
-    .ab-ctrl{width:34px;height:34px;border-radius:50%;background:transparent;border:1px solid var(--border);color:var(--text-secondary);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
-    .ab-ctrl:hover{border-color:var(--accent);color:var(--accent-hover);}
-    .ab-ctrl.primary{width:44px;height:44px;background:var(--accent);border-color:var(--accent);color:#fff;font-size:20px;}
-    .ab-ctrl.primary:hover{background:var(--accent-hover);}
-    .ab-bar-wrap{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
-    .ab-bar-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .4s linear;}
+    .ab-player-top{display:flex;align-items:center;gap:10px;}
+    .ab-icon-pulse{font-size:18px;animation:ab-pulse 2s ease-in-out infinite;flex-shrink:0;}
+    .ab-icon-pulse.paused{animation:none;opacity:.5;}
+    @keyframes ab-pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.6;transform:scale(.92);}}
+    .ab-note-name{flex:1;font-size:14px;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.2px;}
+    .ab-progress-text{font-size:11px;color:var(--accent-hover);font-weight:700;background:var(--accent-glow);padding:3px 10px;border-radius:100px;white-space:nowrap;flex-shrink:0;}
+    .ab-ctrls{display:flex;align-items:center;justify-content:center;gap:12px;}
+    .ab-ctrl{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:var(--text-secondary);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;user-select:none;}
+    .ab-ctrl:hover{border-color:var(--accent);color:var(--accent-hover);background:var(--accent-glow);transform:scale(1.08);}
+    .ab-ctrl:active{transform:scale(.95);}
+    .ab-ctrl.primary{width:52px;height:52px;background:var(--accent);border-color:var(--accent);color:#fff;font-size:22px;box-shadow:0 4px 20px rgba(123,104,238,.45);}
+    .ab-ctrl.primary:hover{background:var(--accent-hover);transform:scale(1.1);}
+    .ab-ctrl.danger{color:var(--danger);border-color:rgba(224,85,85,.3);}
+    .ab-ctrl.danger:hover{background:rgba(224,85,85,.12);border-color:var(--danger);}
+    .ab-bar-wrap{height:4px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden;}
+    .ab-bar-fill{height:100%;background:linear-gradient(to right,var(--accent),#b09fff);border-radius:4px;transition:width .35s linear;}
   </style>
 
   <!-- Firebase SDK -->
@@ -571,7 +578,7 @@
 <!-- MINI PLAYER AUDIOBOOK -->
 <div class="ab-player hidden" id="abPlayer">
   <div class="ab-player-top">
-    <span style="font-size:15px;flex-shrink:0;">🎧</span>
+    <span class="ab-icon-pulse" id="abIconPulse">🎧</span>
     <div class="ab-note-name" id="abNoteName">—</div>
     <div class="ab-progress-text" id="abProgressText"></div>
   </div>
@@ -579,7 +586,7 @@
     <button class="ab-ctrl" onclick="abSkip(-1)" title="Nota anterior">⏮</button>
     <button class="ab-ctrl primary" id="abPlayPauseBtn" onclick="abTogglePause()" title="Pausar/Retomar">⏸</button>
     <button class="ab-ctrl" onclick="abSkip(1)" title="Próxima nota">⏭</button>
-    <button class="ab-ctrl" onclick="abStop()" title="Parar" style="font-size:13px;">⏹</button>
+    <button class="ab-ctrl danger" onclick="abStop()" title="Parar">⏹</button>
   </div>
   <div class="ab-bar-wrap"><div class="ab-bar-fill" id="abBarFill" style="width:0%"></div></div>
 </div>
@@ -1656,74 +1663,91 @@
     btn.disabled=(n===0);
   }
 
+  // Retorna a melhor voz pt-BR disponível no dispositivo
+  function getPtVoice(){
+    const voices=window.speechSynthesis.getVoices();
+    return voices.find(v=>v.lang==='pt-BR')
+        ||voices.find(v=>v.lang==='pt-PT')
+        ||voices.find(v=>v.lang.startsWith('pt'))
+        ||null;
+  }
+
   async function startAudiobook(){
     if(!selectedNoteIds.size)return;
-    const cfg=getApiConfig();
-    if(!cfg.key||cfg.provider!=='groq'){
-      alert('O Modo Audiobook requer a API da Groq. Configure no botao API.');
-      openApiModal();return;
-    }
+    if(!('speechSynthesis' in window)){alert('Seu navegador não suporta leitura de voz.');return;}
     abQueue=getFilteredNotes().filter(n=>selectedNoteIds.has(n.id));
     if(!abQueue.length)return;
     abCurrentIdx=0;abPlaying=true;abPaused=false;
     document.getElementById('abPlayer').classList.remove('hidden');
-    await abPlayCurrent();
+    // Aguarda vozes carregarem (necessário em alguns browsers)
+    await new Promise(resolve=>{
+      if(window.speechSynthesis.getVoices().length>0){resolve();return;}
+      window.speechSynthesis.addEventListener('voiceschanged',resolve,{once:true});
+      setTimeout(resolve,800);
+    });
+    abPlayCurrent();
   }
 
-  async function abPlayCurrent(){
+  function abPlayCurrent(){
     if(abCurrentIdx<0||abCurrentIdx>=abQueue.length){abStop();return;}
     const note=abQueue[abCurrentIdx];
     updatePlayer();
-    const cfg=getApiConfig();
-    const raw=((note.title?note.title+'.\n\n':'')+(note.content||'')).trim();
-    const text=raw.slice(0,4000)||'Nota sem conteudo.';
+    window.speechSynthesis.cancel();
+    const raw=((note.title?note.title+'. ':'')+(note.content||'')).trim();
+    const text=raw||'Nota sem conteúdo.';
+    const utt=new SpeechSynthesisUtterance(text);
+    utt.lang='pt-BR';
+    utt.rate=1.0;
+    utt.pitch=1.0;
+    const ptVoice=getPtVoice();
+    if(ptVoice)utt.voice=ptVoice;
+    abAudio=utt;
     const playBtn=document.getElementById('abPlayPauseBtn');
-    if(playBtn){playBtn.textContent='...';playBtn.disabled=true;}
-    try{
-      const res=await fetch('https://api.groq.com/openai/v1/audio/speech',{
-        method:'POST',
-        headers:{'Authorization':'Bearer '+cfg.key,'Content-Type':'application/json'},
-        body:JSON.stringify({model:'canopylabs/orpheus-v1-english',input:text,voice:'diana',response_format:'wav'})
-      });
-      if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err?.error?.message||'Erro '+res.status);}
-      const blob=await res.blob();
-      const url=URL.createObjectURL(blob);
-      if(abAudio){abAudio.pause();if(abAudio._blobUrl)URL.revokeObjectURL(abAudio._blobUrl);}
-      abAudio=new Audio(url);abAudio._blobUrl=url;
-      abAudio.addEventListener('timeupdate',()=>{
-        if(!abAudio.duration)return;
+    const icon=document.getElementById('abIconPulse');
+    utt.onstart=()=>{
+      abPaused=false;
+      if(playBtn){playBtn.textContent='⏸';playBtn.disabled=false;}
+      if(icon)icon.classList.remove('paused');
+    };
+    utt.onboundary=e=>{
+      if(e.name==='word'&&text.length>0){
         const fill=document.getElementById('abBarFill');
-        if(fill)fill.style.width=((abAudio.currentTime/abAudio.duration)*100)+'%';
-      });
-      abAudio.addEventListener('ended',async()=>{
-        abCurrentIdx++;
-        if(abCurrentIdx<abQueue.length)await abPlayCurrent();
-        else{abStop();showToast('Audiobook concluido!');}
-      });
-      abAudio.addEventListener('error',()=>{showToast('Erro ao reproduzir audio.');abStop();});
-      if(playBtn){playBtn.textContent='pause';playBtn.disabled=false;}
-      abPaused=false;abAudio.play();
-    }catch(e){
-      if(playBtn){playBtn.textContent='pause';playBtn.disabled=false;}
-      showToast('Erro TTS: '+e.message);abStop();
-    }
+        if(fill)fill.style.width=Math.min(100,(e.charIndex/text.length)*100)+'%';
+      }
+    };
+    utt.onend=()=>{
+      abCurrentIdx++;
+      if(abCurrentIdx<abQueue.length)abPlayCurrent();
+      else{abStop();showToast('🎧 Audiobook concluído!');}
+    };
+    utt.onerror=e=>{
+      if(e.error!=='interrupted'&&e.error!=='canceled'){showToast('Erro ao reproduzir.');abStop();}
+    };
+    window.speechSynthesis.speak(utt);
   }
 
   function abTogglePause(){
-    if(!abAudio)return;
     const btn=document.getElementById('abPlayPauseBtn');
-    if(abPaused){abAudio.play();abPaused=false;if(btn)btn.textContent='pause';}
-    else{abAudio.pause();abPaused=true;if(btn)btn.textContent='play';}
+    const icon=document.getElementById('abIconPulse');
+    if(abPaused){
+      window.speechSynthesis.resume();abPaused=false;
+      if(btn)btn.textContent='⏸';
+      if(icon)icon.classList.remove('paused');
+    }else{
+      window.speechSynthesis.pause();abPaused=true;
+      if(btn)btn.textContent='▶';
+      if(icon)icon.classList.add('paused');
+    }
   }
 
   function abSkip(dir){
-    if(abAudio){abAudio.pause();abAudio=null;}
+    window.speechSynthesis.cancel();abAudio=null;
     abCurrentIdx=Math.max(0,Math.min(abQueue.length-1,abCurrentIdx+dir));
     abPaused=false;abPlayCurrent();
   }
 
   function abStop(){
-    if(abAudio){abAudio.pause();abAudio=null;}
+    window.speechSynthesis.cancel();abAudio=null;
     abPlaying=false;abPaused=false;abQueue=[];abCurrentIdx=0;
     const fill=document.getElementById('abBarFill');if(fill)fill.style.width='0%';
     document.getElementById('abPlayer').classList.add('hidden');
@@ -1734,7 +1758,7 @@
     const nameEl=document.getElementById('abNoteName');
     const progEl=document.getElementById('abProgressText');
     const fill=document.getElementById('abBarFill');
-    if(nameEl)nameEl.textContent=note.title||'Sem titulo';
+    if(nameEl)nameEl.textContent=note.title||'Sem título';
     if(progEl)progEl.textContent=(abCurrentIdx+1)+' / '+abQueue.length;
     if(fill)fill.style.width='0%';
   }
