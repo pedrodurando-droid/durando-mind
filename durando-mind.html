@@ -464,6 +464,131 @@
     .mm-filter-badge.hidden{display:none;}
     .mm-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--text-muted);pointer-events:none;}
 
+    /* ============ TAG MANAGER (aba Tags) ============ */
+    .tags-mgr{flex:1;display:flex;overflow:hidden;}
+    .tags-mgr-list{width:340px;min-width:340px;border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--bg-sidebar);}
+    .tags-mgr-header{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:10px;flex-shrink:0;}
+    .tags-mgr-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--text-muted);font-family:'Geist Mono',monospace;}
+    .tags-mgr-search{width:100%;padding:8px 12px;background:var(--bg-app);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:12.5px;font-family:inherit;outline:none;transition:all .15s;}
+    .tags-mgr-search:focus{border-color:var(--border-accent);box-shadow:0 0 0 3px var(--accent-glow);}
+    .tags-mgr-search::placeholder{color:var(--text-muted);}
+    .btn-new-tag{padding:8px 12px;background:linear-gradient(180deg,var(--accent-strong),#8B6FE8);color:#0A0A0C;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .15s;box-shadow:0 4px 14px rgba(167,139,250,.25);}
+    .btn-new-tag:hover{filter:brightness(1.08);}
+    .tags-mgr-tree{flex:1;overflow-y:auto;padding:8px;}
+    .tag-group{margin-bottom:4px;}
+    .tag-group-header{display:flex;align-items:center;gap:6px;padding:7px 10px;cursor:pointer;border-radius:6px;user-select:none;transition:background .12s;}
+    .tag-group-header:hover{background:var(--bg-card-hover);}
+    .tag-group-caret{font-size:10px;color:var(--text-muted);transition:transform .2s;display:inline-block;width:10px;}
+    .tag-group-caret.open{transform:rotate(90deg);}
+    .tag-group-name{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);font-family:'Geist Mono',monospace;flex:1;}
+    .tag-group-count{font-size:10px;color:var(--text-muted);background:var(--bg-app);padding:1px 7px;border-radius:100px;font-family:'Geist Mono',monospace;}
+    .tag-group-children{padding-left:14px;display:none;}
+    .tag-group-children.open{display:block;}
+    .tag-mgr-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:var(--radius-sm);cursor:pointer;margin-bottom:2px;border:1px solid transparent;transition:all .12s;position:relative;}
+    .tag-mgr-item:hover{background:var(--bg-card-hover);}
+    .tag-mgr-item.active{background:var(--accent-glow);border-color:rgba(167,139,250,.35);}
+    .tag-mgr-icon{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:var(--bg-card);border:1px solid var(--border);}
+    .tag-mgr-name{flex:1;min-width:0;font-size:12.5px;font-weight:500;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.005em;}
+    .tag-mgr-sub{font-size:10px;color:var(--text-muted);font-family:'Geist Mono',monospace;flex-shrink:0;}
+    .tag-mgr-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+    .tags-mgr-detail{flex:1;overflow-y:auto;padding:32px 40px 60px;}
+    .tag-detail-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--text-muted);height:100%;}
+    .tag-detail-empty-icon{font-size:48px;opacity:.2;}
+    .tag-detail-head{display:flex;align-items:flex-start;gap:16px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--border);}
+    .tag-detail-icon-big{width:64px;height:64px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:30px;background:var(--bg-card);border:1px solid var(--border);flex-shrink:0;cursor:pointer;transition:all .15s;position:relative;}
+    .tag-detail-icon-big:hover{border-color:var(--accent-strong);}
+    .tag-detail-icon-edit{position:absolute;bottom:-4px;right:-4px;width:22px;height:22px;border-radius:50%;background:var(--accent-strong);color:#0A0A0C;display:flex;align-items:center;justify-content:center;font-size:11px;border:2px solid var(--bg-app);}
+    .tag-detail-body{flex:1;min-width:0;}
+    .tag-detail-name-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;}
+    .tag-detail-name{font-size:26px;font-weight:700;color:var(--text-primary);letter-spacing:-.02em;background:transparent;border:none;outline:none;font-family:inherit;flex:1;min-width:0;}
+    .tag-detail-name:focus{color:var(--accent-hover);}
+    .tag-detail-meta{font-size:11px;color:var(--text-muted);font-family:'Geist Mono',monospace;letter-spacing:.02em;display:flex;gap:14px;flex-wrap:wrap;}
+    .tag-detail-actions{display:flex;gap:6px;flex-shrink:0;}
+    .btn-tag-act{padding:6px 11px;background:transparent;border:1px solid var(--border);color:var(--text-secondary);border-radius:var(--radius-sm);font-size:11.5px;font-weight:500;font-family:inherit;cursor:pointer;transition:all .15s;}
+    .btn-tag-act:hover{border-color:var(--accent-strong);color:var(--accent-hover);}
+    .btn-tag-act.danger:hover{border-color:var(--danger);color:var(--danger);}
+
+    .tag-field-grid{display:grid;grid-template-columns:1fr;gap:18px;margin-bottom:24px;}
+    .tag-field{display:flex;flex-direction:column;gap:6px;}
+    .tag-field-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--accent-strong);font-family:'Geist Mono',monospace;display:flex;align-items:center;gap:6px;}
+    .tag-field-label-hint{font-weight:500;color:var(--text-muted);text-transform:none;letter-spacing:0;font-family:inherit;font-size:11.5px;}
+    .tag-field-input,.tag-field-textarea{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;color:var(--text-primary);font-size:13.5px;font-family:inherit;outline:none;transition:all .15s;line-height:1.55;}
+    .tag-field-input:focus,.tag-field-textarea:focus{border-color:var(--border-accent);background:var(--bg-elevated);box-shadow:0 0 0 3px var(--accent-glow);}
+    .tag-field-input::placeholder,.tag-field-textarea::placeholder{color:var(--text-muted);}
+    .tag-field-textarea{min-height:72px;resize:vertical;}
+
+    .color-picker{display:flex;gap:6px;flex-wrap:wrap;}
+    .color-swatch{width:28px;height:28px;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:all .12s;position:relative;}
+    .color-swatch:hover{transform:scale(1.1);}
+    .color-swatch.active{border-color:var(--text-primary);box-shadow:0 0 0 2px var(--bg-app);}
+    .color-swatch.active::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#0A0A0C;font-size:13px;font-weight:800;}
+
+    .keyword-chips{display:flex;flex-wrap:wrap;gap:5px;padding:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);min-height:40px;align-items:center;}
+    .keyword-chips:focus-within{border-color:var(--border-accent);}
+    .keyword-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:var(--accent-glow);color:var(--accent-hover);border-radius:100px;font-size:11.5px;font-family:'Geist Mono',monospace;border:1px solid rgba(167,139,250,.3);}
+    .keyword-chip-remove{background:none;border:none;color:inherit;cursor:pointer;font-size:12px;opacity:.6;padding:0;line-height:1;}
+    .keyword-chip-remove:hover{opacity:1;}
+    .keyword-input{flex:1;min-width:100px;background:transparent;border:none;outline:none;color:var(--text-primary);font-size:12px;font-family:inherit;padding:3px 4px;}
+    .keyword-input::placeholder{color:var(--text-muted);}
+
+    .tag-detail-notes{margin-top:8px;}
+    .tag-detail-notes-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--text-muted);margin-bottom:10px;font-family:'Geist Mono',monospace;}
+    .tag-detail-notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;}
+    .tag-detail-note{padding:10px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all .15s;}
+    .tag-detail-note:hover{border-color:var(--border-strong);background:var(--bg-card-hover);transform:translateY(-1px);}
+    .tag-detail-note-title{font-size:12.5px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px;letter-spacing:-.005em;}
+    .tag-detail-note-date{font-size:10px;color:var(--text-muted);font-family:'Geist Mono',monospace;}
+
+    /* Icon picker popover */
+    .icon-popover{position:absolute;top:70px;left:0;background:var(--bg-elevated);border:1px solid var(--border-strong);border-radius:var(--radius);padding:8px;display:grid;grid-template-columns:repeat(8,1fr);gap:4px;z-index:50;box-shadow:0 12px 30px rgba(0,0,0,.6);max-width:320px;}
+    .icon-pop-item{width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;border-radius:6px;transition:background .12s;}
+    .icon-pop-item:hover{background:var(--bg-card-hover);}
+
+    /* ============ CHAT COM CONTEXTO ============ */
+    .chat-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;z-index:1500;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);animation:modalFade .2s ease;}
+    .chat-modal-overlay.hidden{display:none;}
+    .chat-modal{width:min(720px,calc(100vw - 32px));height:min(82vh,760px);background:var(--bg-elevated);border:1px solid var(--border-strong);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.7), 0 0 0 1px rgba(167,139,250,.1), 0 0 60px rgba(167,139,250,.12);animation:modalScale .3s cubic-bezier(.4,0,.2,1);}
+    .chat-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;}
+    .chat-head-title{font-size:15px;font-weight:700;color:var(--text-primary);letter-spacing:-.015em;flex:1;}
+    .chat-head-sub{font-size:11px;color:var(--text-muted);font-family:'Geist Mono',monospace;}
+    .chat-head-close{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;line-height:1;padding:6px;border-radius:6px;transition:all .15s;}
+    .chat-head-close:hover{color:var(--text-primary);background:var(--bg-card);}
+    .chat-ctx-bar{padding:10px 22px;background:var(--bg-sidebar);border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex-shrink:0;}
+    .chat-ctx-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--text-muted);font-family:'Geist Mono',monospace;margin-right:4px;}
+    .chat-messages{flex:1;overflow-y:auto;padding:20px 22px;display:flex;flex-direction:column;gap:14px;}
+    .chat-msg{display:flex;flex-direction:column;gap:4px;max-width:90%;animation:msgIn .25s ease both;}
+    @keyframes msgIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+    .chat-msg.user{align-self:flex-end;align-items:flex-end;}
+    .chat-msg.ai{align-self:flex-start;align-items:flex-start;}
+    .chat-msg-role{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);font-family:'Geist Mono',monospace;padding:0 4px;}
+    .chat-msg.user .chat-msg-role{color:var(--accent-hover);}
+    .chat-msg-bubble{padding:11px 14px;border-radius:14px;font-size:13.5px;line-height:1.65;letter-spacing:-.005em;white-space:pre-wrap;word-break:break-word;}
+    .chat-msg.user .chat-msg-bubble{background:linear-gradient(180deg,var(--accent-strong),#8B6FE8);color:#0A0A0C;border-bottom-right-radius:4px;font-weight:500;}
+    .chat-msg.ai .chat-msg-bubble{background:var(--bg-card);border:1px solid var(--border);color:var(--text-primary);border-bottom-left-radius:4px;}
+    .chat-msg.loading .chat-msg-bubble{color:var(--text-muted);}
+    .chat-composer{padding:14px 22px 18px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:flex-end;flex-shrink:0;background:var(--bg-sidebar);}
+    .chat-input{flex:1;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:10px 14px;color:var(--text-primary);font-size:13.5px;font-family:inherit;outline:none;resize:none;min-height:42px;max-height:140px;line-height:1.5;transition:all .15s;}
+    .chat-input:focus{border-color:var(--border-accent);box-shadow:0 0 0 3px var(--accent-glow);}
+    .chat-input::placeholder{color:var(--text-muted);}
+    .chat-send{width:42px;height:42px;border-radius:12px;background:linear-gradient(180deg,var(--accent-strong),#8B6FE8);color:#0A0A0C;border:none;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;box-shadow:0 4px 14px rgba(167,139,250,.3);flex-shrink:0;}
+    .chat-send:hover{filter:brightness(1.08);transform:translateY(-1px);}
+    .chat-send:disabled{opacity:.4;pointer-events:none;box-shadow:none;}
+
+    /* Rename/Merge modals */
+    .action-modal-rows{display:flex;flex-direction:column;gap:14px;}
+    .action-modal-warn{padding:10px 14px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);border-radius:var(--radius-sm);font-size:12px;color:var(--warn);line-height:1.5;}
+
+    @media(max-width:720px){
+      .tags-mgr{flex-direction:column;}
+      .tags-mgr-list{width:100%;min-width:0;max-height:45%;border-right:none;border-bottom:1px solid var(--border);}
+      .tags-mgr-detail{padding:22px 20px 60px;}
+      .tag-detail-head{flex-wrap:wrap;}
+      .tag-detail-icon-big{width:54px;height:54px;font-size:26px;}
+      .tag-detail-name{font-size:22px;}
+      .chat-modal{width:100vw;height:100vh;border-radius:0;}
+    }
+
     /* ============ AUDIOBOOK ============ */
     .btn-ab-mode{width:100%;padding:9px 12px;background:var(--bg-card);color:var(--text-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px;justify-content:center;}
     .btn-ab-mode:hover{border-color:var(--accent-strong);color:var(--accent-hover);}
@@ -631,6 +756,7 @@
     <button class="main-tab active" id="mainTabNotes" onclick="switchTab('notes')">Notas</button>
     <button class="main-tab" id="mainTabAgenda" onclick="switchTab('agenda')">Agenda</button>
     <button class="main-tab" id="mainTabMapa" onclick="switchTab('mapa')">Mapa Mental</button>
+    <button class="main-tab" id="mainTabTags" onclick="switchTab('tags')">Tags</button>
   </div>
 
   <!-- TAB NOTAS -->
@@ -674,6 +800,7 @@
           <button class="btn-ai" onclick="runAI('insights')">Insights</button>
           <button class="btn-ai" onclick="runAI('ideas')">Ideias</button>
           <button class="btn-ai" onclick="runAI('organize')">Organizar</button>
+          <button class="btn-ai" onclick="openChatCtx()" style="border-color:rgba(167,139,250,.35);color:var(--accent-hover);background:rgba(167,139,250,.06);">◈ Chat com contexto</button>
         </div>
         <div class="ai-result-panel" id="aiResultPanel">
           <div class="ai-result-inner">
@@ -741,6 +868,30 @@
     </div>
     <div class="events-list" id="eventsList"></div>
   </div>
+
+  <!-- TAB TAGS (Gestão) -->
+  <div class="tab-content hidden" id="tabTags">
+    <div class="tags-mgr">
+      <div class="tags-mgr-list">
+        <div class="tags-mgr-header">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="tags-mgr-title" style="flex:1;min-width:0;">Todas · <span id="tagsMgrCount">0</span></span>
+            <button class="btn-new-tag" onclick="openNewTagPrompt()">+ Nova</button>
+          </div>
+          <input class="tags-mgr-search" id="tagsMgrSearch" type="text" placeholder="Buscar tags..." oninput="renderTagsMgrTree()"/>
+        </div>
+        <div class="tags-mgr-tree" id="tagsMgrTree"></div>
+      </div>
+      <div class="tags-mgr-detail" id="tagsMgrDetail">
+        <div class="tag-detail-empty">
+          <div class="tag-detail-empty-icon">◈</div>
+          <div style="font-size:14px;color:var(--text-secondary);">Selecione uma tag</div>
+          <div style="font-size:12px;">Edite descrição, cor, ícone, objetivo e palavras-chave</div>
+          <div style="font-size:11px;margin-top:16px;font-family:'Geist Mono',monospace;color:var(--text-muted);">Dica: use <code style="background:var(--bg-card);padding:2px 6px;border-radius:4px;">pai/filho</code> para hierarquia</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </main>
 
 <!-- TAGS SIDEBAR (DIREITA) -->
@@ -752,6 +903,70 @@
   <div class="tags-sidebar-list" id="tagsSidebarList"></div>
 </aside>
 <button class="btn-tags-toggle" id="btnTagsToggle" onclick="toggleTagsSidebar()">Tags</button>
+
+<!-- CHAT COM CONTEXTO -->
+<div class="chat-modal-overlay hidden" id="chatModal">
+  <div class="chat-modal">
+    <div class="chat-head">
+      <div style="font-size:20px;">◈</div>
+      <div style="flex:1;min-width:0;">
+        <div class="chat-head-title">Chat com contexto</div>
+        <div class="chat-head-sub" id="chatHeadSub">—</div>
+      </div>
+      <button class="chat-head-close" onclick="closeChatCtx()">✕</button>
+    </div>
+    <div class="chat-ctx-bar" id="chatCtxBar"></div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-composer">
+      <textarea class="chat-input" id="chatInput" placeholder="Pergunte algo sobre esta nota…" onkeydown="onChatKeydown(event)" rows="1"></textarea>
+      <button class="chat-send" id="chatSend" onclick="sendChatMsg()">↑</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ICON PICKER -->
+<div class="modal-overlay hidden" id="iconPickerModal">
+  <div class="modal" style="width:380px;">
+    <div class="modal-title">Escolher ícone</div>
+    <div id="iconPickerGrid" style="display:grid;grid-template-columns:repeat(8,1fr);gap:6px;max-height:320px;overflow-y:auto;padding:4px;"></div>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="closeIconPicker()">Cancelar</button>
+      <button class="btn-modal-save" onclick="saveIconPick()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RENOMEAR TAG -->
+<div class="modal-overlay hidden" id="renameTagModal">
+  <div class="modal">
+    <div class="modal-title">Renomear tag</div>
+    <div class="action-modal-rows">
+      <div class="modal-row"><label>Nome atual</label><input class="modal-input" id="renameTagOld" type="text" disabled/></div>
+      <div class="modal-row"><label>Novo nome</label><input class="modal-input" id="renameTagNew" type="text" placeholder="novo-nome ou pai/filho"/></div>
+      <div class="action-modal-warn">Isso atualiza a tag em todas as notas que a contêm.</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="closeModal('renameTagModal')">Cancelar</button>
+      <button class="btn-modal-save" onclick="confirmRenameTag()">Renomear</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MESCLAR TAG -->
+<div class="modal-overlay hidden" id="mergeTagModal">
+  <div class="modal">
+    <div class="modal-title">Mesclar tag</div>
+    <div class="action-modal-rows">
+      <div class="modal-row"><label>Tag origem (será removida)</label><input class="modal-input" id="mergeTagSrc" type="text" disabled/></div>
+      <div class="modal-row"><label>Tag destino</label><select class="modal-select" id="mergeTagDst"></select></div>
+      <div class="action-modal-warn">Todas as notas com a tag origem receberão a tag destino no lugar.</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="closeModal('mergeTagModal')">Cancelar</button>
+      <button class="btn-modal-save" onclick="confirmMergeTag()">Mesclar</button>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL — CONFIG API + GOOGLE CALENDAR -->
 <div class="modal-overlay hidden" id="apiModal">
@@ -826,7 +1041,15 @@
     {bg:'rgba(251,146,60,.16)',color:'#FB923C'},
     {bg:'rgba(248,113,113,.16)',color:'#F87171'},
   ];
-  function tagColor(t){let h=0;for(const c of t)h+=c.charCodeAt(0);return TAG_COLORS[h%TAG_COLORS.length];}
+  function tagColorDefault(t){let h=0;for(const c of t)h+=c.charCodeAt(0);return TAG_COLORS[h%TAG_COLORS.length];}
+  function tagColor(t){
+    const m=tagMeta[t];
+    if(m&&m.colorIdx!=null&&TAG_COLORS[m.colorIdx])return TAG_COLORS[m.colorIdx];
+    return tagColorDefault(t);
+  }
+  function tagIcon(t){const m=tagMeta[t];return(m&&m.icon)||'';}
+  function tagParent(t){const i=t.indexOf('/');return i>0?t.slice(0,i):null;}
+  function tagShort(t){const i=t.lastIndexOf('/');return i>=0?t.slice(i+1):t;}
 
   // ============================================================
   // INIT
@@ -951,27 +1174,82 @@
   }
 
   // ============================================================
-  // DESCRIÇÕES DE TAGS
+  // METADADOS DE TAGS (contexto rico: desc, cor, ícone, objetivo, keywords)
   // ============================================================
-  let tagDescs={};
-  function loadTagDescs(){try{tagDescs=JSON.parse(localStorage.getItem('durando_tag_descs')||'{}');}catch{tagDescs={};}}
+  // Estrutura: tagMeta[tag] = { desc, colorIdx, icon, goal, keywords:[], createdAt, updatedAt }
+  let tagMeta={};
+  function normalizeTagMeta(entry){
+    if(!entry)return null;
+    if(typeof entry==='string')return {desc:entry,colorIdx:null,icon:'',goal:'',keywords:[]};
+    return {
+      desc:entry.desc||'',
+      colorIdx:(entry.colorIdx==null?null:Number(entry.colorIdx)),
+      icon:entry.icon||'',
+      goal:entry.goal||'',
+      keywords:Array.isArray(entry.keywords)?entry.keywords:[],
+      createdAt:entry.createdAt||null,
+      updatedAt:entry.updatedAt||null,
+    };
+  }
+  function loadTagDescs(){
+    // Migra do formato antigo (tagDescs = {tag:desc}) para tagMeta
+    try{
+      const rawMeta=localStorage.getItem('durando_tag_meta');
+      if(rawMeta){tagMeta=JSON.parse(rawMeta)||{};}
+      else{
+        const rawOld=localStorage.getItem('durando_tag_descs');
+        if(rawOld){
+          const old=JSON.parse(rawOld)||{};
+          for(const [k,v] of Object.entries(old))tagMeta[k]={desc:v,colorIdx:null,icon:'',goal:'',keywords:[]};
+          localStorage.setItem('durando_tag_meta',JSON.stringify(tagMeta));
+        }
+      }
+    }catch{tagMeta={};}
+    // Normaliza todos os entries
+    for(const [k,v] of Object.entries(tagMeta)){tagMeta[k]=normalizeTagMeta(v);}
+  }
   async function syncTagDescsFromFirestore(){
     if(!currentUser)return;
     try{
-      const doc=await db.collection('users').doc(currentUser.uid).collection('meta').doc('tagDescs').get();
-      if(doc.exists){tagDescs={...tagDescs,...doc.data()};}
-    }catch(e){console.warn('TagDescs sync error:',e);}
+      // Novo documento
+      const docMeta=await db.collection('users').doc(currentUser.uid).collection('meta').doc('tagMeta').get();
+      if(docMeta.exists){
+        const remote=docMeta.data()||{};
+        for(const [k,v] of Object.entries(remote))tagMeta[k]=normalizeTagMeta(v);
+      }else{
+        // Fallback: descrições antigas
+        const docOld=await db.collection('users').doc(currentUser.uid).collection('meta').doc('tagDescs').get();
+        if(docOld.exists){
+          const old=docOld.data()||{};
+          for(const [k,v] of Object.entries(old)){
+            if(!tagMeta[k])tagMeta[k]={desc:v,colorIdx:null,icon:'',goal:'',keywords:[]};
+          }
+          persistTagMetaAll();
+        }
+      }
+      if(typeof renderTagsMgrTree==='function'&&currentTab==='tags')renderTagsMgrTree();
+    }catch(e){console.warn('TagMeta sync error:',e);}
   }
-  async function saveTagDesc(tag,desc){
-    if(desc&&desc.trim())tagDescs[tag]=desc.trim();
-    else delete tagDescs[tag];
-    localStorage.setItem('durando_tag_descs',JSON.stringify(tagDescs));
+  async function persistTagMetaAll(){
+    localStorage.setItem('durando_tag_meta',JSON.stringify(tagMeta));
     if(currentUser){
-      try{await db.collection('users').doc(currentUser.uid).collection('meta').doc('tagDescs').set(tagDescs);}
-      catch(e){console.warn('TagDesc save error:',e);}
+      try{await db.collection('users').doc(currentUser.uid).collection('meta').doc('tagMeta').set(tagMeta);}
+      catch(e){console.warn('TagMeta save error:',e);}
     }
   }
-  function getTagDesc(tag){return tagDescs[tag]||'';}
+  async function saveTagMeta(tag,patch){
+    const prev=tagMeta[tag]||{desc:'',colorIdx:null,icon:'',goal:'',keywords:[],createdAt:Date.now()};
+    const next=normalizeTagMeta({...prev,...patch,updatedAt:Date.now(),createdAt:prev.createdAt||Date.now()});
+    // Se tudo vazio, limpa
+    const empty=!next.desc&&next.colorIdx==null&&!next.icon&&!next.goal&&(!next.keywords||!next.keywords.length);
+    if(empty&&!patch.forceKeep)delete tagMeta[tag];
+    else tagMeta[tag]=next;
+    await persistTagMetaAll();
+  }
+  // Compat: API antiga
+  async function saveTagDesc(tag,desc){await saveTagMeta(tag,{desc});}
+  function getTagDesc(tag){return(tagMeta[tag]&&tagMeta[tag].desc)||'';}
+  function getTagMeta(tag){return tagMeta[tag]||null;}
 
   function toggleTagCtx(){
     const inputs=document.getElementById('tagCtxInputs');
@@ -1192,7 +1470,7 @@
   // ============================================================
   function switchTab(tab){
     currentTab=tab;
-    ['Notes','Agenda','Mapa'].forEach(t=>{
+    ['Notes','Agenda','Mapa','Tags'].forEach(t=>{
       const k=t.toLowerCase();
       const sbt=document.getElementById('sidebarTab'+t);
       const mbt=document.getElementById('mainTab'+t);
@@ -1203,7 +1481,7 @@
     });
     document.getElementById('searchWrap').classList.toggle('hidden',tab!=='notes');
     document.getElementById('tagFilterArea').classList.toggle('hidden',tab!=='notes');
-    document.getElementById('notesList').classList.toggle('hidden',tab==='agenda'||tab==='mapa');
+    document.getElementById('notesList').classList.toggle('hidden',tab!=='notes');
     const btnNew=document.getElementById('btnNew');
     if(tab==='notes'){btnNew.textContent='+ Nova Nota';btnNew.style.display='';}
     else if(tab==='agenda'){btnNew.textContent='+ Novo Evento';btnNew.style.display='';}
@@ -1213,6 +1491,7 @@
     if(tab==='agenda')renderAgendaTab();
     if(tab==='mapa'){mmStop();setTimeout(()=>{mmInit();},50);}
     else{mmStop();}
+    if(tab==='tags'){renderTagsMgrTree();}
     closeSidebar();
   }
   function handleBtnNew(){if(currentTab==='notes')createNote();else if(currentTab==='agenda')document.getElementById('eventTextarea').focus();}
@@ -1594,10 +1873,17 @@
   const AI_PROMPTS={
     summarize:t=>'Faça um resumo em até 5 bullets em português brasileiro.\n\n'+t,
     insights:(t,tags)=>{
-      const hasCtx=tags&&tags.length&&tags.some(tag=>getTagDesc(tag));
+      const tagCtxLines=(tags||[]).map(tag=>{
+        const m=tagMeta[tag]||{};
+        const parts=[];
+        if(m.desc)parts.push(m.desc);
+        if(m.goal)parts.push('objetivo: '+m.goal);
+        if(m.keywords&&m.keywords.length)parts.push('palavras-chave: '+m.keywords.join(', '));
+        return parts.length?'- #'+tag+' — '+parts.join(' · '):'- #'+tag;
+      }).join('\n');
+      const hasCtx=tags&&tags.length&&tags.some(tag=>tagMeta[tag]&&(tagMeta[tag].desc||tagMeta[tag].goal||(tagMeta[tag].keywords||[]).length));
       if(hasCtx){
-        const ctxLines=tags.map(tag=>{const d=getTagDesc(tag);return d?'- #'+tag+': '+d:'- #'+tag;}).join('\n');
-        return'Gere insights e conexões não óbvias sobre a nota abaixo em bullets, em português brasileiro.\n\nContexto das categorias desta nota:\n'+ctxLines+'\n\nUse esse contexto para tornar os insights mais relevantes, específicos e acionáveis para este domínio.\n\nNota:\n'+t;
+        return'Gere insights e conexões não óbvias sobre a nota abaixo em bullets, em português brasileiro.\n\nContexto das tags desta nota:\n'+tagCtxLines+'\n\nUse esse contexto para tornar os insights específicos e acionáveis.\n\nNota:\n'+t;
       }
       return'Extraia insights e conexões não óbvias em bullets, em português brasileiro.\n\n'+t;
     },
@@ -2015,6 +2301,471 @@
   });
   window.addEventListener('appinstalled',()=>{
     deferredInstallPrompt=null;showToast('Durando Mind instalado.');
+  });
+
+  // ============================================================
+  // TAG MANAGER (aba Tags)
+  // ============================================================
+  let mgrSelected=null;
+  let mgrGroupOpen=JSON.parse(localStorage.getItem('durando_mgr_groups_open')||'{}');
+  function saveMgrGroupsOpen(){localStorage.setItem('durando_mgr_groups_open',JSON.stringify(mgrGroupOpen));}
+  function closeModal(id){const el=document.getElementById(id);if(el)el.classList.add('hidden');}
+
+  function getTagUsage(tag){return notes.filter(n=>n.tags&&n.tags.includes(tag)).length;}
+  function getTagNotes(tag){return notes.filter(n=>n.tags&&n.tags.includes(tag)).sort((a,b)=>(b.updatedAt||'').localeCompare(a.updatedAt||''));}
+
+  function buildTagHierarchy(){
+    // Junta tags presentes em notas + tags órfãs que têm meta
+    const all=new Set(getAllTags());
+    Object.keys(tagMeta).forEach(t=>all.add(t));
+    const groups={}; // {groupName: [{tag, leaf, count}]}
+    const roots=[];
+    [...all].sort().forEach(tag=>{
+      const p=tagParent(tag);
+      if(p){
+        if(!groups[p])groups[p]=[];
+        groups[p].push({tag,leaf:tagShort(tag),count:getTagUsage(tag)});
+      }else{
+        roots.push({tag,count:getTagUsage(tag)});
+      }
+    });
+    // Tags-pai que aparecem como grupo mas não têm entry própria → cria
+    Object.keys(groups).forEach(p=>{
+      if(!all.has(p)&&!roots.find(r=>r.tag===p))roots.push({tag:p,count:getTagUsage(p),isGroupOnly:true});
+    });
+    roots.sort((a,b)=>a.tag.localeCompare(b.tag));
+    return {roots,groups};
+  }
+
+  function renderTagsMgrTree(){
+    const tree=document.getElementById('tagsMgrTree');
+    const countEl=document.getElementById('tagsMgrCount');
+    if(!tree)return;
+    const search=(document.getElementById('tagsMgrSearch')?.value||'').toLowerCase().trim();
+    const {roots,groups}=buildTagHierarchy();
+    const allTagsCount=new Set([...getAllTags(),...Object.keys(tagMeta)]).size;
+    if(countEl)countEl.textContent=allTagsCount;
+
+    const matchTag=(t)=>!search||t.toLowerCase().includes(search)||((tagMeta[t]?.desc||'').toLowerCase().includes(search))||((tagMeta[t]?.keywords||[]).some(k=>k.toLowerCase().includes(search)));
+
+    if(!roots.length){
+      tree.innerHTML='<div style="padding:24px 12px;text-align:center;color:var(--text-muted);font-size:12px;">Nenhuma tag ainda.<br/><span style="font-size:11px;">Use <code style="background:var(--bg-card);padding:1px 5px;border-radius:4px;">+ Nova</code> ou adicione em notas.</span></div>';
+      return;
+    }
+
+    let html='';
+    for(const root of roots){
+      const children=groups[root.tag]||[];
+      const hasChildren=children.length>0;
+      const rootMatches=matchTag(root.tag);
+      const childMatches=children.filter(c=>matchTag(c.tag));
+      if(search&&!rootMatches&&!childMatches.length)continue;
+      if(hasChildren){
+        const open=mgrGroupOpen[root.tag]!==false; // default open
+        const shownChildren=search?childMatches:children;
+        html+='<div class="tag-group">'+
+          '<div class="tag-group-header" onclick="toggleMgrGroup(\''+encAttr(root.tag)+'\')">'+
+            '<span class="tag-group-caret '+(open?'open':'')+'">▶</span>'+
+            '<span class="tag-group-name">'+esc(root.tag)+'</span>'+
+            '<span class="tag-group-count">'+shownChildren.length+'</span>'+
+          '</div>'+
+          '<div class="tag-group-children '+(open||search?'open':'')+'">'+
+          (rootMatches&&!root.isGroupOnly?mgrItemHtml(root.tag,root.count,true):'')+
+          shownChildren.map(c=>mgrItemHtml(c.tag,c.count,false,c.leaf)).join('')+
+          '</div></div>';
+      }else if(rootMatches){
+        html+=mgrItemHtml(root.tag,root.count,false);
+      }
+    }
+    tree.innerHTML=html||'<div style="padding:24px 12px;text-align:center;color:var(--text-muted);font-size:12px;">Nada encontrado.</div>';
+  }
+
+  function mgrItemHtml(tag,count,asSelf,leafName){
+    const c=tagColor(tag);
+    const icon=tagIcon(tag);
+    const name=leafName||tag;
+    const active=mgrSelected===tag?'active':'';
+    return '<div class="tag-mgr-item '+active+'" onclick="selectMgrTag(\''+encAttr(tag)+'\')">'+
+      '<div class="tag-mgr-icon" style="color:'+c.color+';background:'+c.bg+';border-color:'+c.color+'22;">'+(icon||name.slice(0,1).toUpperCase())+'</div>'+
+      '<div class="tag-mgr-name">'+(asSelf?'<span style="opacity:.55">·</span> ':'')+esc(name)+'</div>'+
+      '<div class="tag-mgr-sub">'+count+'</div>'+
+    '</div>';
+  }
+
+  function toggleMgrGroup(tag){
+    mgrGroupOpen[tag]=!(mgrGroupOpen[tag]!==false);
+    saveMgrGroupsOpen();
+    renderTagsMgrTree();
+  }
+
+  function selectMgrTag(tag){
+    mgrSelected=tag;
+    renderTagsMgrTree();
+    renderTagsMgrDetail();
+  }
+
+  function renderTagsMgrDetail(){
+    const host=document.getElementById('tagsMgrDetail');
+    if(!host)return;
+    if(!mgrSelected){
+      host.innerHTML='<div class="tag-detail-empty"><div class="tag-detail-empty-icon">◈</div><div style="font-size:14px;color:var(--text-secondary);">Selecione uma tag</div><div style="font-size:12px;">Edite descrição, cor, ícone, objetivo e palavras-chave</div></div>';
+      return;
+    }
+    const tag=mgrSelected;
+    const meta=tagMeta[tag]||{desc:'',colorIdx:null,icon:'',goal:'',keywords:[]};
+    const c=tagColor(tag);
+    const count=getTagUsage(tag);
+    const relatedNotes=getTagNotes(tag).slice(0,12);
+    const colorIdxActive=meta.colorIdx==null?-1:Number(meta.colorIdx);
+    const kws=meta.keywords||[];
+
+    host.innerHTML=
+      '<div class="tag-detail-head">'+
+        '<div class="tag-detail-icon-big" onclick="openIconPicker()" style="color:'+c.color+';background:'+c.bg+';">'+
+          (meta.icon||tagShort(tag).slice(0,1).toUpperCase())+
+          '<span class="tag-detail-icon-edit">✎</span>'+
+        '</div>'+
+        '<div class="tag-detail-body">'+
+          '<div class="tag-detail-name-row">'+
+            '<div class="tag-detail-name">#'+esc(tag)+'</div>'+
+            '<div class="tag-detail-actions">'+
+              '<button class="btn-tag-act" onclick="openRenameTagModal()">Renomear</button>'+
+              '<button class="btn-tag-act" onclick="openMergeTagModal()" '+(count===0?'disabled style="opacity:.4"':'')+'>Mesclar</button>'+
+              '<button class="btn-tag-act danger" onclick="deleteMgrTag()">Excluir</button>'+
+            '</div>'+
+          '</div>'+
+          '<div class="tag-detail-meta">'+
+            '<span>'+count+' nota'+(count===1?'':'s')+'</span>'+
+            (tagParent(tag)?'<span>pai: '+esc(tagParent(tag))+'</span>':'')+
+            (meta.updatedAt?'<span>atualizada '+timeAgoMgr(meta.updatedAt)+'</span>':'')+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+
+      '<div class="tag-field-grid">'+
+        '<div class="tag-field">'+
+          '<div class="tag-field-label">Descrição <span class="tag-field-label-hint">— contexto para a IA</span></div>'+
+          '<textarea class="tag-field-textarea" id="mgrFieldDesc" placeholder="Ex: Notas sobre o projeto X, incluindo reuniões, decisões e tarefas.">'+esc(meta.desc||'')+'</textarea>'+
+        '</div>'+
+        '<div class="tag-field">'+
+          '<div class="tag-field-label">Objetivo <span class="tag-field-label-hint">— o que você busca com esta tag</span></div>'+
+          '<input class="tag-field-input" id="mgrFieldGoal" type="text" value="'+esc(meta.goal||'')+'" placeholder="Ex: Manter registro de aprendizados"/>'+
+        '</div>'+
+        '<div class="tag-field">'+
+          '<div class="tag-field-label">Cor</div>'+
+          '<div class="color-picker" id="mgrColorPicker">'+
+            '<div class="color-swatch '+(colorIdxActive===-1?'active':'')+'" onclick="pickMgrColor(null)" style="background:'+tagColorDefault(tag).color+';" title="Automática"></div>'+
+            TAG_COLORS.map((col,i)=>'<div class="color-swatch '+(colorIdxActive===i?'active':'')+'" onclick="pickMgrColor('+i+')" style="background:'+col.color+';"></div>').join('')+
+          '</div>'+
+        '</div>'+
+        '<div class="tag-field">'+
+          '<div class="tag-field-label">Palavras-chave <span class="tag-field-label-hint">— Enter para adicionar</span></div>'+
+          '<div class="keyword-chips" id="mgrKwChips" onclick="document.getElementById(\'mgrKwInput\').focus()">'+
+            kws.map((k,i)=>'<span class="keyword-chip">'+esc(k)+'<button class="keyword-chip-remove" onclick="removeMgrKw('+i+')">×</button></span>').join('')+
+            '<input class="keyword-input" id="mgrKwInput" type="text" placeholder="'+(kws.length?'':'digite e tecle Enter')+'" onkeydown="onMgrKwKey(event)"/>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+
+      '<div class="tag-detail-notes">'+
+        '<div class="tag-detail-notes-title">Notas com esta tag · '+count+'</div>'+
+        (relatedNotes.length?
+          '<div class="tag-detail-notes-grid">'+
+            relatedNotes.map(n=>'<div class="tag-detail-note" onclick="openNoteFromMgr(\''+n.id+'\')">'+
+              '<div class="tag-detail-note-title">'+esc(n.title||'Sem título')+'</div>'+
+              '<div class="tag-detail-note-date">'+fmtDateMgr(n.updatedAt)+'</div>'+
+            '</div>').join('')+
+          '</div>'
+          :'<div style="font-size:12px;color:var(--text-muted);padding:10px 0;">Nenhuma nota usa esta tag ainda.</div>')+
+        (count>12?'<div style="font-size:11px;color:var(--text-muted);margin-top:10px;font-family:Geist Mono,monospace;">+'+(count-12)+' outras…</div>':'')+
+      '</div>';
+
+    // Bind auto-save com debounce
+    const dsc=document.getElementById('mgrFieldDesc');
+    const gol=document.getElementById('mgrFieldGoal');
+    let t=null;
+    const commit=()=>{clearTimeout(t);t=setTimeout(()=>{
+      saveTagMeta(mgrSelected,{desc:dsc.value,goal:gol.value});
+    },400);};
+    dsc.oninput=commit;gol.oninput=commit;
+  }
+
+  function fmtDateMgr(iso){if(!iso)return'';const d=new Date(iso);const now=new Date();if(d.toDateString()===now.toDateString())return d.toTimeString().slice(0,5);return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});}
+  function timeAgoMgr(iso){const t=typeof iso==='number'?iso:new Date(iso).getTime();const s=Math.floor((Date.now()-t)/1000);if(s<60)return'agora';if(s<3600)return Math.floor(s/60)+'min atrás';if(s<86400)return Math.floor(s/3600)+'h atrás';return Math.floor(s/86400)+'d atrás';}
+  function encAttr(s){return String(s||'').replace(/'/g,"\\'");}
+
+  async function pickMgrColor(idx){
+    if(!mgrSelected)return;
+    await saveTagMeta(mgrSelected,{colorIdx:idx});
+    renderTagsMgrTree();
+    renderTagsMgrDetail();
+    renderSidebar();
+    renderTagsInEditor?.();
+  }
+
+  async function onMgrKwKey(ev){
+    if(ev.key==='Enter'){
+      ev.preventDefault();
+      const inp=ev.target;const val=inp.value.trim();
+      if(!val||!mgrSelected)return;
+      const meta=tagMeta[mgrSelected]||{keywords:[]};
+      const kws=[...(meta.keywords||[])];
+      if(!kws.includes(val)){kws.push(val);await saveTagMeta(mgrSelected,{keywords:kws});renderTagsMgrDetail();}
+      else inp.value='';
+    }else if(ev.key==='Backspace'&&!ev.target.value){
+      const meta=tagMeta[mgrSelected];
+      if(meta&&meta.keywords&&meta.keywords.length){
+        const kws=meta.keywords.slice(0,-1);
+        await saveTagMeta(mgrSelected,{keywords:kws});renderTagsMgrDetail();
+      }
+    }
+  }
+  async function removeMgrKw(i){
+    if(!mgrSelected)return;
+    const meta=tagMeta[mgrSelected];if(!meta||!meta.keywords)return;
+    const kws=meta.keywords.filter((_,j)=>j!==i);
+    await saveTagMeta(mgrSelected,{keywords:kws});renderTagsMgrDetail();
+  }
+
+  function openNoteFromMgr(id){currentId=id;switchTab('notes');setTimeout(()=>{renderEditor?.();},10);}
+
+  // --- Icon picker ---
+  const ICON_LIST=['📝','📌','📚','💡','🎯','🚀','⚡','🔥','🌱','🌿','🍃','🌊','⛰️','🏔️','☀️','🌙','⭐','✨','🎨','🎭','🎬','🎵','🎸','🏆','💼','💻','📱','📞','📧','📁','📊','📈','📉','🗂️','🏷️','🔖','🔗','🔒','🔑','⚙️','🛠️','🧠','👁️','💬','💭','✅','❌','⚠️','❓','❗','⏰','📅','🗓️','💰','💵','🎁','🏠','🚗','✈️','🌍','❤️','💙','💜','💚','💛','🧡','🤍','🖤','🔴','🟠','🟡','🟢','🔵','🟣','⚪','⚫','🟤','△','◯','◇','◈','◉','●','○','■','□'];
+  function openIconPicker(){
+    const grid=document.getElementById('iconPickerGrid');
+    grid.innerHTML=ICON_LIST.map(i=>'<div class="icon-pop-item" onclick="pickIconPop(\''+i+'\')">'+i+'</div>').join('')+
+      '<div class="icon-pop-item" onclick="pickIconPop(\'\')" title="Nenhum" style="font-size:11px;color:var(--text-muted);">–</div>';
+    document.getElementById('iconPickerModal').classList.remove('hidden');
+  }
+  function closeIconPicker(){closeModal('iconPickerModal');}
+  let _pendingIcon=null;
+  function pickIconPop(icon){_pendingIcon=icon;document.querySelectorAll('.icon-pop-item').forEach(el=>el.style.background='');event.currentTarget.style.background='var(--accent-glow)';}
+  async function saveIconPick(){
+    if(_pendingIcon===null)return closeIconPicker();
+    if(!mgrSelected)return closeIconPicker();
+    await saveTagMeta(mgrSelected,{icon:_pendingIcon});
+    _pendingIcon=null;closeIconPicker();renderTagsMgrTree();renderTagsMgrDetail();renderSidebar();renderTagsInEditor?.();
+  }
+
+  // --- Nova tag ---
+  async function openNewTagPrompt(){
+    const name=prompt('Nome da nova tag (use "pai/filho" para hierarquia):');
+    if(!name)return;
+    const tag=name.trim().toLowerCase().replace(/\s+/g,'-');
+    if(!tag)return;
+    await saveTagMeta(tag,{forceKeep:true});
+    mgrSelected=tag;renderTagsMgrTree();renderTagsMgrDetail();
+  }
+
+  // --- Renomear ---
+  function openRenameTagModal(){
+    if(!mgrSelected)return;
+    document.getElementById('renameTagOld').value=mgrSelected;
+    document.getElementById('renameTagNew').value=mgrSelected;
+    document.getElementById('renameTagModal').classList.remove('hidden');
+    setTimeout(()=>document.getElementById('renameTagNew').focus(),60);
+  }
+  async function confirmRenameTag(){
+    const oldT=document.getElementById('renameTagOld').value;
+    const newT=document.getElementById('renameTagNew').value.trim().toLowerCase().replace(/\s+/g,'-');
+    if(!newT||newT===oldT){closeModal('renameTagModal');return;}
+    if(tagMeta[newT]&&!confirm('A tag "'+newT+'" já existe. Mesclar?')){return;}
+    // Renomeia em notas
+    const affected=notes.filter(n=>n.tags&&n.tags.includes(oldT));
+    for(const n of affected){
+      n.tags=[...new Set(n.tags.map(t=>t===oldT?newT:t))];
+      n.updatedAt=new Date().toISOString();
+      await saveNote(n);
+    }
+    // Move meta
+    if(tagMeta[oldT]){
+      tagMeta[newT]={...(tagMeta[newT]||{}),...tagMeta[oldT],updatedAt:Date.now()};
+      delete tagMeta[oldT];
+      await persistTagMetaAll();
+    }
+    mgrSelected=newT;closeModal('renameTagModal');
+    renderTagsMgrTree();renderTagsMgrDetail();renderSidebar();renderTagsInEditor?.();
+    showToast?.('Tag renomeada · '+affected.length+' nota(s) atualizada(s)');
+  }
+
+  // --- Mesclar ---
+  function openMergeTagModal(){
+    if(!mgrSelected)return;
+    const all=[...new Set([...getAllTags(),...Object.keys(tagMeta)])].filter(t=>t!==mgrSelected).sort();
+    if(!all.length){alert('Não há outras tags para mesclar.');return;}
+    document.getElementById('mergeTagSrc').value=mgrSelected;
+    document.getElementById('mergeTagDst').innerHTML=all.map(t=>'<option value="'+esc(t)+'">#'+esc(t)+'</option>').join('');
+    document.getElementById('mergeTagModal').classList.remove('hidden');
+  }
+  async function confirmMergeTag(){
+    const src=document.getElementById('mergeTagSrc').value;
+    const dst=document.getElementById('mergeTagDst').value;
+    if(!src||!dst||src===dst){closeModal('mergeTagModal');return;}
+    const affected=notes.filter(n=>n.tags&&n.tags.includes(src));
+    for(const n of affected){
+      n.tags=[...new Set(n.tags.map(t=>t===src?dst:t))];
+      n.updatedAt=new Date().toISOString();
+      await saveNote(n);
+    }
+    if(tagMeta[src]){delete tagMeta[src];await persistTagMetaAll();}
+    mgrSelected=dst;closeModal('mergeTagModal');
+    renderTagsMgrTree();renderTagsMgrDetail();renderSidebar();renderTagsInEditor?.();
+    showToast?.('Mescladas · '+affected.length+' nota(s) atualizada(s)');
+  }
+
+  // --- Excluir ---
+  async function deleteMgrTag(){
+    if(!mgrSelected)return;
+    const count=getTagUsage(mgrSelected);
+    const msg=count>0?'Remover "#'+mgrSelected+'" de '+count+' nota(s) e excluir seus metadados?':'Excluir metadados da tag "#'+mgrSelected+'"?';
+    if(!confirm(msg))return;
+    const affected=notes.filter(n=>n.tags&&n.tags.includes(mgrSelected));
+    for(const n of affected){
+      n.tags=n.tags.filter(t=>t!==mgrSelected);
+      n.updatedAt=new Date().toISOString();
+      await saveNote(n);
+    }
+    delete tagMeta[mgrSelected];
+    await persistTagMetaAll();
+    mgrSelected=null;
+    renderTagsMgrTree();renderTagsMgrDetail();renderSidebar();renderTagsInEditor?.();
+    showToast?.('Tag excluída');
+  }
+
+  // ============================================================
+  // CHAT COM CONTEXTO (IA)
+  // ============================================================
+  let chatHistory=[]; // [{role:'user'|'assistant',content}]
+  let chatCtxNoteId=null;
+
+  function openChatCtx(){
+    const note=findById(currentId);
+    if(!note){alert('Abra uma nota primeiro.');return;}
+    chatCtxNoteId=note.id;
+    chatHistory=[];
+    document.getElementById('chatHeadSub').textContent=(note.title||'Sem título').slice(0,60);
+    renderChatCtxBar();
+    document.getElementById('chatMessages').innerHTML=
+      '<div class="chat-msg ai"><div class="chat-msg-role">◈ Contexto carregado</div>'+
+      '<div class="chat-msg-bubble">Posso te ajudar a pensar sobre esta nota. Tenho acesso ao <strong>título</strong>, <strong>conteúdo</strong>, <strong>tags</strong> e ao <strong>contexto rico de cada tag</strong> (descrição, objetivo, palavras-chave). Pergunte o que quiser.</div></div>';
+    document.getElementById('chatModal').classList.remove('hidden');
+    setTimeout(()=>document.getElementById('chatInput').focus(),100);
+  }
+  function closeChatCtx(){document.getElementById('chatModal').classList.add('hidden');}
+
+  function renderChatCtxBar(){
+    const bar=document.getElementById('chatCtxBar');
+    const note=findById(chatCtxNoteId);
+    if(!note){bar.innerHTML='';return;}
+    const tags=note.tags||[];
+    bar.innerHTML='<span class="chat-ctx-label">Contexto</span>'+
+      '<span class="keyword-chip" style="background:var(--bg-card);border-color:var(--border);color:var(--text-secondary);">📝 '+esc((note.title||'nota').slice(0,30))+'</span>'+
+      tags.map(t=>{const c=tagColor(t);const ic=tagIcon(t);return '<span class="keyword-chip" style="background:'+c.bg+';color:'+c.color+';border-color:'+c.color+'33;">'+(ic?ic+' ':'')+'#'+esc(t)+'</span>';}).join('');
+  }
+
+  function onChatKeydown(ev){
+    const ta=ev.target;
+    ta.style.height='auto';ta.style.height=Math.min(140,ta.scrollHeight)+'px';
+    if(ev.key==='Enter'&&!ev.shiftKey){ev.preventDefault();sendChatMsg();}
+  }
+
+  function buildChatSystemPrompt(){
+    const note=findById(chatCtxNoteId);if(!note)return'';
+    const tags=note.tags||[];
+    const tagCtx=tags.map(t=>{
+      const m=tagMeta[t]||{};
+      const parts=[];
+      if(m.desc)parts.push('Descrição: '+m.desc);
+      if(m.goal)parts.push('Objetivo: '+m.goal);
+      if(m.keywords&&m.keywords.length)parts.push('Palavras-chave: '+m.keywords.join(', '));
+      return '• #'+t+(parts.length?'\n   '+parts.join('\n   '):' (sem contexto definido)');
+    }).join('\n');
+    return [
+      'Você é o assistente do Durando Mind, um app de notas pessoais. Responda em português do Brasil, de forma direta, clara e útil.',
+      'Você tem acesso total ao contexto da nota atual do usuário e ao significado das tags que ele usa.',
+      '',
+      '═══ NOTA ATUAL ═══',
+      'Título: '+(note.title||'(sem título)'),
+      'Conteúdo:',
+      note.content||'(vazio)',
+      '',
+      '═══ TAGS DA NOTA ═══',
+      tagCtx||'(nenhuma tag)',
+      '',
+      '═══ INSTRUÇÕES ═══',
+      '- Use o contexto das tags ativamente: elas revelam intenção, projetos e áreas de vida do usuário.',
+      '- Seja específico à nota; não dê conselhos genéricos.',
+      '- Se citar a nota, use o conteúdo real, não invente.',
+      '- Formate com Markdown simples quando ajudar a leitura.',
+    ].join('\n');
+  }
+
+  async function sendChatMsg(){
+    const inp=document.getElementById('chatInput');
+    const text=inp.value.trim();
+    if(!text)return;
+    const sendBtn=document.getElementById('chatSend');
+    sendBtn.disabled=true;
+    chatHistory.push({role:'user',content:text});
+    appendChatMsg('user',text);
+    inp.value='';inp.style.height='auto';
+
+    const loadingEl=appendChatMsg('ai',' ◦ ◦ ◦',true);
+    try{
+      const cfg=getApiConfig();
+      if(!cfg||!cfg.key){loadingEl.querySelector('.chat-msg-bubble').innerHTML='⚠️ Configure a API em <strong>Alt + A</strong> para usar o chat.';loadingEl.classList.remove('loading');sendBtn.disabled=false;return;}
+      const sys=buildChatSystemPrompt();
+      const reply=await callChatWithHistory(cfg,sys,chatHistory);
+      chatHistory.push({role:'assistant',content:reply});
+      loadingEl.querySelector('.chat-msg-bubble').innerHTML=mdLite(reply);
+      loadingEl.classList.remove('loading');
+    }catch(e){
+      loadingEl.querySelector('.chat-msg-bubble').textContent='⚠️ '+(e.message||'Erro na IA');
+      loadingEl.classList.remove('loading');
+    }finally{
+      sendBtn.disabled=false;
+      const msgs=document.getElementById('chatMessages');msgs.scrollTop=msgs.scrollHeight;
+    }
+  }
+
+  function mdLite(t){return esc(t).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code style="background:var(--bg-app);padding:1px 5px;border-radius:4px;font-size:12px;">$1</code>').replace(/\n/g,'<br>');}
+
+  function appendChatMsg(role,content,loading){
+    const msgs=document.getElementById('chatMessages');
+    const wrap=document.createElement('div');
+    wrap.className='chat-msg '+role+(loading?' loading':'');
+    wrap.innerHTML='<div class="chat-msg-role">'+(role==='user'?'Você':'◈ IA')+'</div><div class="chat-msg-bubble">'+(loading?content:mdLite(content))+'</div>';
+    msgs.appendChild(wrap);msgs.scrollTop=msgs.scrollHeight;
+    return wrap;
+  }
+
+  async function callChatWithHistory(cfg,sys,history){
+    if(cfg.provider==='anthropic'){
+      const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'x-api-key':cfg.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true','Content-Type':'application/json'},body:JSON.stringify({model:cfg.model,max_tokens:1024,system:sys,messages:history})});
+      if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||'HTTP '+res.status);}
+      return(await res.json()).content?.[0]?.text?.trim()||'(vazio)';
+    }
+    const ep={groq:'https://api.groq.com/openai/v1/chat/completions',openai:'https://api.openai.com/v1/chat/completions'};
+    if(!ep[cfg.provider])throw new Error('Provedor não suportado: '+cfg.provider);
+    const messages=[{role:'system',content:sys},...history];
+    const res=await fetch(ep[cfg.provider],{method:'POST',headers:{'Authorization':'Bearer '+cfg.key,'Content-Type':'application/json'},body:JSON.stringify({model:cfg.model,messages,temperature:0.5})});
+    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||'HTTP '+res.status);}
+    return(await res.json()).choices?.[0]?.message?.content?.trim()||'(vazio)';
+  }
+
+  // Fechar modais ao clicar overlay
+  document.addEventListener('click',ev=>{
+    if(ev.target.id==='chatModal')closeChatCtx();
+    if(ev.target.id==='iconPickerModal')closeIconPicker();
+    if(ev.target.id==='renameTagModal')closeModal('renameTagModal');
+    if(ev.target.id==='mergeTagModal')closeModal('mergeTagModal');
+  });
+
+  // ESC fecha chat
+  document.addEventListener('keydown',ev=>{
+    if(ev.key==='Escape'){
+      if(!document.getElementById('chatModal').classList.contains('hidden'))closeChatCtx();
+    }
   });
 </script>
 </body>
