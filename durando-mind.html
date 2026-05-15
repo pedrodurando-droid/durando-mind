@@ -14,6 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
   <link rel="manifest" href="manifest.json"/>
+  <link rel="stylesheet" href="journal.css"/>
   <link rel="apple-touch-icon" href="icon-192.png"/>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='2' y='2' width='28' height='28' rx='8' fill='%23111114'/><circle cx='10' cy='11' r='2' fill='%23C9BBFF'/><circle cx='22' cy='11' r='2' fill='%23C9BBFF'/><circle cx='10' cy='21' r='2' fill='%23C9BBFF'/><circle cx='22' cy='21' r='2' fill='%23C9BBFF'/><circle cx='16' cy='16' r='2.5' fill='%23C9BBFF'/><line x1='10' y1='11' x2='16' y2='16' stroke='%23C9BBFF' stroke-width='1.2' opacity='.5'/><line x1='22' y1='11' x2='16' y2='16' stroke='%23C9BBFF' stroke-width='1.2' opacity='.5'/><line x1='10' y1='21' x2='16' y2='16' stroke='%23C9BBFF' stroke-width='1.2' opacity='.5'/><line x1='22' y1='21' x2='16' y2='16' stroke='%23C9BBFF' stroke-width='1.2' opacity='.5'/></svg>"/>
 
@@ -189,7 +190,7 @@
     .main-tab.active{color:var(--accent-hover);border-bottom-color:var(--accent-strong);}
 
     /* ============ NOTAS / EDITOR ============ */
-    .tab-content{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+    .tab-content{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;}
 
     .empty-state{
       flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -589,60 +590,6 @@
       .chat-modal{width:100vw;height:100vh;border-radius:0;}
     }
 
-    /* ============ JORNAL ============ */
-    .journal-shell{flex:1;overflow-y:auto;padding:24px 28px 120px;background:var(--bg-app);}
-    .journal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:18px;}
-    .journal-title{font-size:28px;font-weight:800;color:var(--text-primary);letter-spacing:-.03em;margin-bottom:5px;}
-    .journal-sub{font-size:12.5px;color:var(--text-secondary);line-height:1.55;max-width:720px;}
-    .journal-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
-    .journal-btn{height:34px;padding:0 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);font:600 12px Geist,Inter,sans-serif;cursor:pointer;transition:all .15s;white-space:nowrap;}
-    .journal-btn:hover{border-color:var(--accent-strong);color:var(--accent-hover);background:var(--accent-glow);}
-    .journal-btn.primary{background:linear-gradient(180deg,var(--accent-strong),#8B6FE8);color:#0A0A0C;border-color:var(--accent-strong);box-shadow:0 4px 14px rgba(167,139,250,.24);}
-    .journal-btn.danger{color:var(--danger);border-color:rgba(248,113,113,.3);}
-    .journal-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
-    .journal-cats{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;flex:1;min-width:240px;}
-    .journal-chip{padding:8px 11px;border-radius:999px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;}
-    .journal-chip:hover{color:var(--text-primary);border-color:var(--border-strong);}
-    .journal-chip.active{background:var(--accent-glow);color:var(--accent-hover);border-color:var(--accent-strong);box-shadow:0 0 0 1px rgba(167,139,250,.08);}
-    .journal-panel{border:1px solid var(--border);background:var(--bg-sidebar);border-radius:var(--radius);overflow:hidden;margin-bottom:16px;}
-    .journal-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);}
-    .journal-panel-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.11em;color:var(--text-muted);font-family:'Geist Mono',monospace;}
-    .journal-settings{display:grid;grid-template-columns:repeat(4,minmax(140px,1fr));gap:10px;padding:14px 16px;}
-    .journal-field label{display:block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin-bottom:6px;font-family:'Geist Mono',monospace;}
-    .journal-input,.journal-select{width:100%;height:36px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font:500 12.5px Geist,Inter,sans-serif;padding:0 10px;outline:none;}
-    .journal-input:focus,.journal-select:focus{border-color:var(--border-accent);box-shadow:0 0 0 3px var(--accent-glow);}
-    .journal-status{font-size:11.5px;color:var(--text-muted);line-height:1.5;padding:0 16px 14px;}
-    .journal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
-    .news-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;min-height:320px;transition:all .16s;}
-    .news-card:hover{border-color:var(--border-strong);background:var(--bg-card-hover);transform:translateY(-1px);}
-    .news-img{height:132px;background:linear-gradient(135deg,rgba(167,139,250,.18),rgba(94,234,212,.08));position:relative;overflow:hidden;}
-    .news-img img{width:100%;height:100%;object-fit:cover;display:block;}
-    .news-img.placeholder{display:flex;align-items:center;justify-content:center;color:var(--accent-hover);font-weight:800;font-size:28px;font-family:'Geist Mono',monospace;}
-    .news-body{padding:14px;display:flex;flex-direction:column;gap:10px;flex:1;}
-    .news-kicker{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);font-family:'Geist Mono',monospace;font-weight:700;}
-    .news-cat{color:var(--accent-hover);background:var(--accent-glow);border:1px solid rgba(167,139,250,.24);padding:3px 7px;border-radius:999px;}
-    .news-title{font-size:16px;font-weight:800;color:var(--text-primary);line-height:1.25;letter-spacing:-.02em;}
-    .news-summary{font-size:12.5px;color:var(--text-secondary);line-height:1.55;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;}
-    .news-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:4px;}
-    .news-ai-btn{height:30px;padding:0 8px;border-radius:var(--radius-sm);border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--text-secondary);font:700 11px Geist,Inter,sans-serif;cursor:pointer;transition:all .15s;}
-    .news-ai-btn:hover{border-color:var(--accent-strong);color:var(--accent-hover);background:var(--accent-glow);}
-    .news-link-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:2px;}
-    .news-link{font-size:11.5px;color:var(--accent-hover);text-decoration:none;font-weight:700;}
-    .news-link:hover{text-decoration:underline;}
-    .favorite-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--bg-app);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .15s;flex-shrink:0;}
-    .favorite-btn:hover,.favorite-btn.active{border-color:var(--accent-strong);color:var(--accent-hover);background:var(--accent-glow);}
-    .journal-empty{padding:48px 20px;text-align:center;color:var(--text-muted);border:1px dashed var(--border);border-radius:var(--radius);background:rgba(255,255,255,.02);}
-    .journal-empty-title{font-size:16px;color:var(--text-secondary);font-weight:700;margin-bottom:6px;}
-    .journal-loading{display:flex;align-items:center;justify-content:center;gap:10px;padding:54px 20px;color:var(--text-secondary);font-size:13px;}
-    .journal-ai-panel{margin-top:18px;}
-    .journal-ai-panel .ai-result-inner{margin:0;}
-
-    @media(max-width:900px){
-      .journal-settings{grid-template-columns:repeat(2,minmax(140px,1fr));}
-      .journal-head{flex-direction:column;align-items:stretch;}
-      .journal-actions{justify-content:flex-start;}
-    }
-
     /* ============ AUDIOBOOK ============ */
     .btn-ab-mode{width:100%;padding:9px 12px;background:var(--bg-card);color:var(--text-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px;justify-content:center;}
     .btn-ab-mode:hover{border-color:var(--accent-strong);color:var(--accent-hover);}
@@ -736,6 +683,8 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
 </head>
 <body>
 
@@ -931,7 +880,7 @@
       <div class="journal-head">
         <div>
           <div class="journal-title">Jornal</div>
-          <div class="journal-sub">NotÃ­cias diÃ¡rias por tema, com IA para resumir, extrair insights, gerar ideias e ouvir em audiobook.</div>
+          <div class="journal-sub">Notícias diárias por tema, com IA para resumir, extrair insights, gerar ideias e ouvir em audiobook.</div>
         </div>
         <div class="journal-actions">
           <button class="journal-btn" onclick="toggleJournalSettings()">Configurar</button>
@@ -946,30 +895,30 @@
 
       <div class="journal-panel hidden" id="journalSettingsPanel">
         <div class="journal-panel-head">
-          <div class="journal-panel-title">Fontes e notificaÃ§Ãµes</div>
+          <div class="journal-panel-title">Fontes e notificações</div>
           <button class="journal-btn" onclick="saveJournalSettingsFromUi()">Salvar</button>
         </div>
         <div class="journal-settings">
           <div class="journal-field">
-            <label>Fonte</label>
+            <label>Fallback manual</label>
             <select class="journal-select" id="journalSourceSelect">
               <option value="rss2json">Google News RSS via rss2json</option>
-              <option value="gnews">GNews API</option>
+              <option value="gnews">GNews direto com chave própria</option>
             </select>
           </div>
           <div class="journal-field">
-            <label>API Key GNews</label>
-            <input class="journal-input" id="journalGnewsKey" type="password" placeholder="opcional"/>
+            <label>API Key GNews opcional</label>
+            <input class="journal-input" id="journalGnewsKey" type="password" placeholder="apenas para fallback manual"/>
           </div>
           <div class="journal-field">
-            <label>NotificaÃ§Ã£o</label>
+            <label>Notificação</label>
             <select class="journal-select" id="journalNotifyEnabled">
               <option value="false">Desligada</option>
               <option value="true">Ligada</option>
             </select>
           </div>
           <div class="journal-field">
-            <label>HorÃ¡rio</label>
+            <label>Horário</label>
             <input class="journal-input" id="journalNotifyTime" type="time" value="08:30"/>
           </div>
           <div class="journal-field">
@@ -977,8 +926,12 @@
             <select class="journal-select" id="journalNotifyCategory"></select>
           </div>
           <div class="journal-field">
-            <label>AÃ§Ã£o</label>
-            <button class="journal-btn primary" style="width:100%;height:36px;" onclick="requestJournalNotificationPermission()">Permitir notificaÃ§Ãµes</button>
+            <label>Chave publica VAPID</label>
+            <input class="journal-input" id="journalVapidKey" type="password" placeholder="necessaria para push FCM"/>
+          </div>
+          <div class="journal-field">
+            <label>Ação</label>
+            <button class="journal-btn primary" style="width:100%;height:36px;" onclick="requestJournalNotificationPermission()">Permitir notificações</button>
           </div>
           <div class="journal-field">
             <label>Teste</label>
@@ -995,12 +948,15 @@
         <div class="ai-result-inner">
           <div class="ai-result-header">
             <div class="ai-result-title" id="journalAiResultTitle">Resultado</div>
-            <button class="btn-close-result" onclick="closeJournalAiPanel()">âœ•</button>
+            <button class="btn-close-result" onclick="closeJournalAiPanel()">✕</button>
           </div>
           <div id="journalAiResultBody"></div>
         </div>
       </div>
     </div>
+
+    <div id="journalOverlay" class="journal-overlay" onclick="closeJournalDetail()"></div>
+    <div id="journalDetail" class="journal-detail"></div>
   </div>
 
   <!-- TAB TAGS (Gestão) -->
@@ -1162,7 +1118,12 @@
   let mediaRecorder=null, audioChunks=[], isRecording=false;
   let currentUser=null, notesUnsub=null, eventsUnsub=null;
   let journalArticles={}, journalLoading=false, journalSelectedCategory='ia', journalFavoriteView=false;
+  let journalDetailArticle=null;
   let journalFavorites=[], journalFavoritesUnsub=null, journalNotifyTimer=null;
+  let journalSourceState={};
+  let journalLastFetchMeta=null;
+  let journalMessaging=null, journalFcmToken='', pwaRegistration=null;
+  const FIREBASE_MESSAGING_VAPID_KEY = '';
 
   // ============================================================
   // PALETA TAGS (obsidian-tuned, maior saturação sobre dark)
@@ -1196,6 +1157,16 @@
     updateGcalButton();
     buildAbWave();
     initJournal();
+    // Navega para aba Jornal se URL contiver #jornal (ex: clique em notificação push)
+    if(window.location.hash==='#jornal')switchTab('jornal');
+    // Listener para mensagens do service worker (clique em push com app aberto)
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.addEventListener('message',ev=>{
+        if(ev.data&&ev.data.type==='JOURNAL_NOTIFICATION_CLICK'){
+          switchTab('jornal');
+        }
+      });
+    }
   }
 
   // Build 48 empty bars for the audiobook waveform
@@ -1235,6 +1206,10 @@
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();
+  const journalFunctions = firebase.functions ? firebase.app().functions('southamerica-east1') : null;
+  if (journalFunctions && localStorage.getItem('durando_use_functions_emulator') === 'true') {
+    journalFunctions.useEmulator('localhost', 5001);
+  }
 
   auth.onAuthStateChanged(user => {
     currentUser = user;
@@ -1246,6 +1221,8 @@
       subscribeNotes();
       subscribeEvents();
       subscribeJournalFavorites();
+      const savedFcm=getJournalSettings().fcmToken;
+      if(savedFcm)saveJournalFcmToken(savedFcm).catch(e=>console.warn('FCM token restore error:',e));
       updateApiStatus();
       updateGcalButton();
     } else {
@@ -1303,6 +1280,10 @@
   async function removeEventDb(id) { if(!currentUser)return; await userCol('events').doc(id).delete(); }
 
   function signInWithGoogle() {
+    if (window.location.protocol === 'file:') {
+      alert('Abra o Durando Mind pelo atalho da área de trabalho ou por http://localhost:8080/durando-mind.html. O login do Firebase não funciona quando o HTML é aberto direto como arquivo.');
+      return;
+    }
     const provider = new firebase.auth.GoogleAuthProvider();
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     if (isMobile) {
@@ -1439,7 +1420,8 @@
   const MODELS={groq:['llama-3.3-70b-versatile','llama-3.1-8b-instant','mixtral-8x7b-32768'],openai:['gpt-4o','gpt-4o-mini','gpt-3.5-turbo'],anthropic:['claude-opus-4-6','claude-sonnet-4-6','claude-haiku-4-5-20251001']};
   const API_DOCS={groq:'<a href="https://console.groq.com/keys" target="_blank">console.groq.com</a>',openai:'<a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a>',anthropic:'<a href="https://console.anthropic.com/keys" target="_blank">console.anthropic.com</a>'};
   function getApiConfig(){try{return JSON.parse(localStorage.getItem('durando_api_config'))||{provider:'groq',model:'llama-3.3-70b-versatile',key:''};}catch{return{provider:'groq',model:'llama-3.3-70b-versatile',key:''};}}
-  function updateApiStatus(){const cfg=getApiConfig();const d=document.getElementById('apiStatusDot');if(cfg.key){d.classList.add('connected');d.title='Conectado · '+cfg.provider;}else{d.classList.remove('connected');d.title='IA não configurada';}}
+  function canUseAI(){const cfg=getApiConfig();return !!(journalFunctions||cfg.key);}
+  function updateApiStatus(){const cfg=getApiConfig();const d=document.getElementById('apiStatusDot');if(journalFunctions){d.classList.add('connected');d.title=cfg.key?'IA via backend · fallback local configurado':'IA via backend Firebase';}else if(cfg.key){d.classList.add('connected');d.title='IA local · '+cfg.provider;}else{d.classList.remove('connected');d.title='IA não configurada';}}
   function openApiModal(){
     const cfg=getApiConfig();
     document.getElementById('apiProvider').value=cfg.provider;
@@ -1452,10 +1434,9 @@
   function closeApiModal(){document.getElementById('apiModal').classList.add('hidden');}
   function onProviderChange(){const p=document.getElementById('apiProvider').value;populateModelSelect(p,'');updateModalDesc(p);}
   function populateModelSelect(p,s){document.getElementById('apiModel').innerHTML=(MODELS[p]||[]).map(m=>'<option value="'+m+'"'+(m===s?' selected':'')+'>'+m+'</option>').join('');}
-  function updateModalDesc(p){document.getElementById('apiModalDesc').innerHTML='Obtenha sua key em '+(API_DOCS[p]||'');}
+  function updateModalDesc(p){document.getElementById('apiModalDesc').innerHTML='Chave local opcional para uso pessoal/fallback. Para maior segurança, prefira configurar a chave no backend Firebase Functions. Obtenha sua key em '+(API_DOCS[p]||'');}
   function saveApiConfig(){
     const key=document.getElementById('apiKeyInput').value.trim();
-    if(!key){alert('Por favor, insira uma API key.');return;}
     localStorage.setItem('durando_api_config',JSON.stringify({provider:document.getElementById('apiProvider').value,model:document.getElementById('apiModel').value,key}));
     updateApiStatus();closeApiModal();
   }
@@ -1652,381 +1633,6 @@
     closeSidebar();
   }
   function handleBtnNew(){if(currentTab==='notes')createNote();else if(currentTab==='agenda')document.getElementById('eventTextarea').focus();}
-
-  // ============================================================
-  // JORNAL
-  // ============================================================
-  const JOURNAL_CACHE_HOURS=8;
-  const JOURNAL_CATEGORIES=[
-    {id:'ia',label:'IA',query:'inteligencia artificial OR IA OR ChatGPT'},
-    {id:'programacao',label:'Programacao',query:'programacao OR desenvolvimento de software OR tecnologia'},
-    {id:'esportes',label:'Esportes',query:'esportes hoje'},
-    {id:'nba',label:'NBA',query:'NBA basquete'},
-    {id:'futebol',label:'Futebol',query:'futebol brasileiro OR futebol mundial'},
-    {id:'ufc-mma',label:'UFC/MMA',query:'UFC OR MMA'},
-    {id:'mercado',label:'Mercado economico',query:'mercado financeiro OR economia OR bolsa valores'},
-    {id:'mundo',label:'Mundo',query:'noticias internacionais OR mundo'},
-  ];
-
-  function initJournal(){
-    journalFavorites=loadJournalFavoritesLocal();
-    renderJournalCategories();
-    renderJournalSettingsUi();
-    scheduleJournalNotificationLoop();
-  }
-
-  function getJournalSettings(){
-    const defaults={source:'rss2json',gnewsKey:'',notifyEnabled:false,notifyTime:'08:30',notifyCategory:'ia',lastNotifyDate:''};
-    try{return {...defaults,...(JSON.parse(localStorage.getItem('durando_journal_settings'))||{})};}
-    catch{return defaults;}
-  }
-  function saveJournalSettings(s){localStorage.setItem('durando_journal_settings',JSON.stringify({...getJournalSettings(),...s}));}
-  function journalCat(id){return JOURNAL_CATEGORIES.find(c=>c.id===id)||JOURNAL_CATEGORIES[0];}
-  function journalTodayKey(){return new Date().toISOString().slice(0,10);}
-  function journalHash(s){let h=0;for(let i=0;i<String(s).length;i++){h=((h<<5)-h)+String(s).charCodeAt(i);h|=0;}return Math.abs(h).toString(36);}
-  function journalCacheKey(catId){return 'durando_journal_cache_'+catId;}
-
-  function renderJournalCategories(){
-    const host=document.getElementById('journalCategories');
-    const notifySel=document.getElementById('journalNotifyCategory');
-    if(host){
-      host.innerHTML=JOURNAL_CATEGORIES.map(c=>'<button class="journal-chip '+(journalSelectedCategory===c.id?'active':'')+'" onclick="selectJournalCategory(\''+c.id+'\')">'+esc(c.label)+'</button>').join('');
-    }
-    if(notifySel){
-      notifySel.innerHTML=JOURNAL_CATEGORIES.map(c=>'<option value="'+c.id+'">'+esc(c.label)+'</option>').join('');
-    }
-  }
-
-  function renderJournalSettingsUi(){
-    const s=getJournalSettings();
-    const source=document.getElementById('journalSourceSelect');
-    const key=document.getElementById('journalGnewsKey');
-    const enabled=document.getElementById('journalNotifyEnabled');
-    const time=document.getElementById('journalNotifyTime');
-    const cat=document.getElementById('journalNotifyCategory');
-    if(source)source.value=s.source;
-    if(key)key.value=s.gnewsKey||'';
-    if(enabled)enabled.value=String(!!s.notifyEnabled);
-    if(time)time.value=s.notifyTime||'08:30';
-    if(cat)cat.value=s.notifyCategory||'ia';
-    renderJournalSettingsStatus();
-  }
-
-  function renderJournalSettingsStatus(){
-    const el=document.getElementById('journalSettingsStatus');
-    if(!el)return;
-    const s=getJournalSettings();
-    const perm=('Notification' in window)?Notification.permission:'indisponivel';
-    const source=s.source==='gnews'?'GNews API':'Google News RSS via rss2json';
-    el.innerHTML='Fonte atual: <strong>'+esc(source)+'</strong>. Permissao de notificacao: <strong>'+esc(perm)+'</strong>. Em app estatico, notificacoes locais disparam enquanto o app/PWA estiver aberto; push real exige backend ou Firebase Messaging.';
-  }
-
-  function toggleJournalSettings(){
-    const p=document.getElementById('journalSettingsPanel');
-    if(!p)return;
-    p.classList.toggle('hidden');
-    renderJournalSettingsUi();
-  }
-
-  function saveJournalSettingsFromUi(){
-    saveJournalSettings({
-      source:document.getElementById('journalSourceSelect')?.value||'rss2json',
-      gnewsKey:(document.getElementById('journalGnewsKey')?.value||'').trim(),
-      notifyEnabled:document.getElementById('journalNotifyEnabled')?.value==='true',
-      notifyTime:document.getElementById('journalNotifyTime')?.value||'08:30',
-      notifyCategory:document.getElementById('journalNotifyCategory')?.value||'ia',
-    });
-    renderJournalSettingsStatus();
-    scheduleJournalNotificationLoop();
-    showToast('Configuracao do Jornal salva.');
-  }
-
-  function selectJournalCategory(id){
-    journalSelectedCategory=id;
-    journalFavoriteView=false;
-    renderJournalCategories();
-    renderJournal();
-    refreshJournal(false);
-  }
-
-  function toggleJournalFavoritesView(){
-    journalFavoriteView=!journalFavoriteView;
-    const btn=document.getElementById('journalFavViewBtn');
-    if(btn)btn.textContent=journalFavoriteView?'Ver noticias':'Favoritos';
-    renderJournal();
-  }
-
-  async function refreshJournal(force){
-    const cat=journalCat(journalSelectedCategory);
-    if(journalFavoriteView){renderJournal();return;}
-    if(journalLoading)return;
-    const cached=getJournalCache(cat.id);
-    if(cached&&!force){
-      journalArticles[cat.id]=cached.items;
-      renderJournal();
-      return;
-    }
-    journalLoading=true;
-    renderJournal();
-    try{
-      const items=await fetchJournalArticles(cat);
-      journalArticles[cat.id]=items;
-      setJournalCache(cat.id,items);
-    }catch(e){
-      console.warn('Journal fetch error:',e);
-      const fallback=buildJournalFallback(cat,e.message);
-      journalArticles[cat.id]=fallback;
-      setJournalCache(cat.id,fallback);
-      showToast('Fonte de noticias indisponivel. Mostrando fallback local.');
-    }finally{
-      journalLoading=false;
-      renderJournal();
-    }
-  }
-
-  function getJournalCache(catId){
-    try{
-      const c=JSON.parse(localStorage.getItem(journalCacheKey(catId))||'null');
-      if(!c||!c.items)return null;
-      const age=(Date.now()-(c.fetchedAt||0))/36e5;
-      if(c.day===journalTodayKey()&&age<JOURNAL_CACHE_HOURS)return c;
-    }catch{}
-    return null;
-  }
-  function setJournalCache(catId,items){localStorage.setItem(journalCacheKey(catId),JSON.stringify({day:journalTodayKey(),fetchedAt:Date.now(),items}));}
-
-  async function fetchJournalArticles(cat){
-    const s=getJournalSettings();
-    if(s.source==='gnews'&&s.gnewsKey){
-      return fetchJournalFromGNews(cat,s.gnewsKey);
-    }
-    return fetchJournalFromRss2Json(cat);
-  }
-
-  async function fetchJournalFromGNews(cat,key){
-    const url='https://gnews.io/api/v4/search?q='+encodeURIComponent(cat.query)+'&lang=pt&country=br&max=10&apikey='+encodeURIComponent(key);
-    const res=await fetch(url);
-    const data=await res.json().catch(()=>({}));
-    if(!res.ok)throw new Error(data.errors?.[0]||data.message||'GNews HTTP '+res.status);
-    return (data.articles||[]).map(a=>normalizeJournalArticle({
-      title:a.title,description:a.description,content:a.content,link:a.url,source:a.source?.name,pubDate:a.publishedAt,thumbnail:a.image
-    },cat)).filter(Boolean);
-  }
-
-  async function fetchJournalFromRss2Json(cat){
-    const rss='https://news.google.com/rss/search?q='+encodeURIComponent(cat.query)+'&hl=pt-BR&gl=BR&ceid=BR:pt-419';
-    const url='https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(rss);
-    const res=await fetch(url);
-    const data=await res.json().catch(()=>({}));
-    if(!res.ok||data.status==='error')throw new Error(data.message||'rss2json HTTP '+res.status);
-    return (data.items||[]).slice(0,12).map(item=>normalizeJournalArticle(item,cat)).filter(Boolean);
-  }
-
-  function normalizeJournalArticle(raw,cat){
-    const title=stripHtml(raw.title||'').trim();
-    const link=raw.link||raw.url||raw.guid||'';
-    if(!title||!link)return null;
-    const summary=stripHtml(raw.description||raw.contentSnippet||raw.content||'').replace(/\s+/g,' ').trim();
-    const source=stripHtml(raw.source||raw.author||extractSourceFromTitle(title)||'Fonte externa');
-    const date=raw.pubDate||raw.publishedAt||raw.isoDate||new Date().toISOString();
-    const image=raw.thumbnail||raw.enclosure?.link||extractFirstImage(raw.description||raw.content||'');
-    return {
-      id:cat.id+'-'+journalHash(link||title),
-      title:title.replace(/\s-\sGoogle News$/,''),
-      summary:summary||'Abra a noticia original para ler os detalhes completos.',
-      source,date,link,image,
-      category:cat.id,
-      categoryLabel:cat.label,
-    };
-  }
-
-  function extractSourceFromTitle(t){
-    const parts=String(t).split(' - ');
-    return parts.length>1?parts[parts.length-1]:'';
-  }
-  function extractFirstImage(html){
-    const m=String(html||'').match(/<img[^>]+src=["']([^"']+)["']/i);
-    return m?m[1]:'';
-  }
-  function stripHtml(html){
-    const div=document.createElement('div');
-    div.innerHTML=String(html||'');
-    return div.textContent||div.innerText||'';
-  }
-
-  function buildJournalFallback(cat,reason){
-    const now=new Date().toISOString();
-    return [
-      {
-        id:cat.id+'-fallback-1',title:'Configure uma fonte para carregar noticias reais de '+cat.label,
-        summary:'A busca diaria esta pronta, mas a fonte externa falhou ou bloqueou a requisicao no navegador. Use rss2json, ou cadastre uma chave da GNews API nas configuracoes do Jornal.',
-        source:'Durando Mind',date:now,link:'https://news.google.com/search?q='+encodeURIComponent(cat.query),
-        image:'',category:cat.id,categoryLabel:cat.label,isFallback:true,fetchError:reason
-      },
-      {
-        id:cat.id+'-fallback-2',title:'O Jornal salva favoritos e aplica IA assim que as noticias chegam',
-        summary:'Mesmo no fallback, voce pode testar favoritos, resumo, insights, ideias e audiobook. Quando a API responder, estes cards serao substituidos por noticias reais atualizadas.',
-        source:'Durando Mind',date:now,link:'https://news.google.com/',
-        image:'',category:cat.id,categoryLabel:cat.label,isFallback:true,fetchError:reason
-      }
-    ];
-  }
-
-  function renderJournal(){
-    renderJournalCategories();
-    renderJournalSettingsStatus();
-    const status=document.getElementById('journalStatus');
-    const grid=document.getElementById('journalNewsGrid');
-    if(!status||!grid)return;
-    const cat=journalCat(journalSelectedCategory);
-    const items=journalFavoriteView?journalFavorites:(journalArticles[cat.id]||[]);
-    if(journalLoading){
-      status.innerHTML='<div class="journal-loading"><div class="spinner"></div> Atualizando noticias de '+esc(cat.label)+'...</div>';
-      grid.innerHTML='';
-      return;
-    }
-    status.innerHTML='';
-    if(!items.length){
-      grid.innerHTML='<div class="journal-empty" style="grid-column:1/-1;"><div class="journal-empty-title">'+(journalFavoriteView?'Nenhuma noticia favorita':'Nenhuma noticia carregada')+'</div><div>'+(journalFavoriteView?'Favorite noticias para montar sua lista de leitura.':'Clique em Atualizar agora para buscar as noticias do dia.')+'</div></div>';
-      return;
-    }
-    grid.innerHTML=items.map(renderNewsCard).join('');
-  }
-
-  function renderNewsCard(a){
-    const fav=isJournalFavorite(a.id);
-    const img=a.image?'<img src="'+esc(a.image)+'" alt="" loading="lazy" onerror="this.parentElement.classList.add(\'placeholder\');this.remove();"/>':'';
-    const initials=(a.categoryLabel||'J').split(/\s+/).map(w=>w[0]).join('').slice(0,3).toUpperCase();
-    return '<article class="news-card">'+
-      '<div class="news-img '+(a.image?'':'placeholder')+'">'+(img||initials)+'</div>'+
-      '<div class="news-body">'+
-        '<div class="news-kicker"><span class="news-cat">'+esc(a.categoryLabel||journalCat(a.category).label)+'</span><span>'+esc(a.source||'Fonte')+'</span><span>'+formatJournalDate(a.date)+'</span></div>'+
-        '<div class="news-title">'+esc(a.title)+'</div>'+
-        '<div class="news-summary">'+esc(a.summary)+'</div>'+
-        '<div class="news-actions">'+
-          '<button class="news-ai-btn" onclick="runJournalAI(\'summarize\',\''+a.id+'\')">Resumir</button>'+
-          '<button class="news-ai-btn" onclick="runJournalAI(\'insights\',\''+a.id+'\')">Insights</button>'+
-          '<button class="news-ai-btn" onclick="runJournalAI(\'ideas\',\''+a.id+'\')">Ideias</button>'+
-          '<button class="news-ai-btn" onclick="startJournalAudiobook(\''+a.id+'\')">Audiobook</button>'+
-        '</div>'+
-        '<div class="news-link-row">'+
-          '<a class="news-link" href="'+esc(a.link)+'" target="_blank" rel="noopener">Abrir original</a>'+
-          '<button class="favorite-btn '+(fav?'active':'')+'" title="'+(fav?'Desfavoritar':'Favoritar')+'" onclick="toggleJournalFavorite(\''+a.id+'\')">'+(fav?'★':'☆')+'</button>'+
-        '</div>'+
-      '</div>'+
-    '</article>';
-  }
-
-  function getJournalArticle(id){
-    for(const list of Object.values(journalArticles)){const a=list.find(x=>x.id===id);if(a)return a;}
-    return journalFavorites.find(x=>x.id===id)||null;
-  }
-  function journalArticleText(a){return [a.title,a.summary,'Fonte: '+(a.source||''),'Categoria: '+(a.categoryLabel||''),a.link].filter(Boolean).join('\n\n');}
-  function formatJournalDate(d){try{return new Date(d).toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});}catch{return'';}}
-
-  async function runJournalAI(action,id){
-    const a=getJournalArticle(id);if(!a)return;
-    const cfg=getApiConfig();if(!cfg.key){openApiModal();return;}
-    const title={summarize:'Resumo da noticia',insights:'Insights da noticia',ideas:'Ideias a partir da noticia'}[action]||'IA';
-    const prompts={
-      summarize:'Resuma a noticia abaixo em ate 5 bullets, em portugues brasileiro. Separe fatos confirmados de contexto quando fizer sentido.\n\n',
-      insights:'Extraia insights praticos, impactos e conexoes nao obvias da noticia abaixo, em bullets, em portugues brasileiro.\n\n',
-      ideas:'Gere 5 ideias praticas a partir da noticia abaixo. Inclua ideias de estudo, trabalho, conteudo ou decisao quando aplicavel.\n\n'
-    };
-    setJournalAiLoading(title);
-    try{setJournalAiResult(title,await callAI(cfg,prompts[action]+journalArticleText(a)));}
-    catch(e){setJournalAiResult('Erro','Erro: '+e.message);}
-  }
-  function setJournalAiLoading(title){
-    document.querySelectorAll('.news-ai-btn').forEach(b=>b.disabled=true);
-    const p=document.getElementById('journalAiResultPanel');
-    if(p)p.classList.add('open');
-    document.getElementById('journalAiResultTitle').textContent=title;
-    document.getElementById('journalAiResultBody').innerHTML='<div class="ai-loading"><div class="spinner"></div> Processando...</div>';
-  }
-  function setJournalAiResult(title,text){
-    document.querySelectorAll('.news-ai-btn').forEach(b=>b.disabled=false);
-    document.getElementById('journalAiResultPanel').classList.add('open');
-    document.getElementById('journalAiResultTitle').textContent=title;
-    document.getElementById('journalAiResultBody').innerHTML=mdLite(text);
-  }
-  function closeJournalAiPanel(){document.getElementById('journalAiResultPanel').classList.remove('open');document.querySelectorAll('.news-ai-btn').forEach(b=>b.disabled=false);}
-
-  async function startJournalAudiobook(id){
-    const a=getJournalArticle(id);if(!a)return;
-    if(!('speechSynthesis' in window)){alert('Seu navegador nao suporta leitura de voz.');return;}
-    abQueue=[{title:a.title,content:a.summary,source:a.source,link:a.link}];
-    abCurrentIdx=0;abPlaying=true;abPaused=false;
-    document.getElementById('abPlayer').classList.remove('hidden');
-    await new Promise(resolve=>{
-      if(window.speechSynthesis.getVoices().length>0){resolve();return;}
-      window.speechSynthesis.addEventListener('voiceschanged',resolve,{once:true});
-      setTimeout(resolve,800);
-    });
-    abPlayCurrent();
-  }
-
-  function loadJournalFavoritesLocal(){try{return JSON.parse(localStorage.getItem('durando_journal_favorites'))||[];}catch{return[];}}
-  function saveJournalFavoritesLocal(){localStorage.setItem('durando_journal_favorites',JSON.stringify(journalFavorites));}
-  function isJournalFavorite(id){return journalFavorites.some(f=>f.id===id);}
-  async function toggleJournalFavorite(id){
-    const existing=journalFavorites.find(f=>f.id===id);
-    if(existing){
-      journalFavorites=journalFavorites.filter(f=>f.id!==id);
-      saveJournalFavoritesLocal();
-      if(currentUser){try{await userCol('journalFavorites').doc(existing.favId||id).delete();}catch(e){console.warn('Favorite delete error:',e);}}
-      showToast('Noticia removida dos favoritos.');
-    }else{
-      const a=getJournalArticle(id);if(!a)return;
-      const fav={...a,savedAt:new Date().toISOString()};
-      journalFavorites=[fav,...journalFavorites.filter(f=>f.id!==id)];
-      saveJournalFavoritesLocal();
-      if(currentUser){try{await userCol('journalFavorites').doc(id).set(fav);}catch(e){console.warn('Favorite save error:',e);}}
-      showToast('Noticia favoritada.');
-    }
-    renderJournal();
-  }
-
-  async function requestJournalNotificationPermission(){
-    if(!('Notification' in window)){alert('Este navegador nao suporta notificacoes.');return;}
-    const perm=await Notification.requestPermission();
-    if(perm==='granted'){
-      saveJournalSettings({notifyEnabled:true});
-      renderJournalSettingsUi();
-      showToast('Notificacoes do Jornal ativadas.');
-    }else alert('Permissao de notificacao nao concedida.');
-  }
-
-  function scheduleJournalNotificationLoop(){
-    if(journalNotifyTimer)clearInterval(journalNotifyTimer);
-    journalNotifyTimer=setInterval(()=>sendJournalNotification(false),60000);
-  }
-
-  async function sendJournalNotification(force){
-    const s=getJournalSettings();
-    if(!force&&(!s.notifyEnabled||!('Notification' in window)||Notification.permission!=='granted'))return;
-    if(('Notification' in window)&&Notification.permission!=='granted'){
-      if(force)await requestJournalNotificationPermission();
-      if(Notification.permission!=='granted')return;
-    }
-    const now=new Date();
-    const today=journalTodayKey();
-    if(!force){
-      const hhmm=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
-      if(hhmm<s.notifyTime||s.lastNotifyDate===today)return;
-    }
-    const cat=journalCat(s.notifyCategory||'ia');
-    if(!journalArticles[cat.id]||!journalArticles[cat.id].length){
-      try{journalArticles[cat.id]=await fetchJournalArticles(cat);setJournalCache(cat.id,journalArticles[cat.id]);}
-      catch{journalArticles[cat.id]=buildJournalFallback(cat,'notificacao');}
-    }
-    const top=(journalArticles[cat.id]||[])[0];
-    const title=force?'Teste do Jornal':'Veja as principais noticias de '+cat.label+' de hoje';
-    const body=top?top.title:'Abra o Jornal para ler as noticias do dia.';
-    new Notification(title,{body,icon:''});
-    saveJournalSettings({lastNotifyDate:today});
-    renderJournalSettingsStatus();
-  }
 
   // ============================================================
   // TAGS SIDEBAR DIREITA
@@ -2427,7 +2033,7 @@
     const note=findById(currentId);if(!note)return;
     const content=note.title+'\n'+note.content;
     if(!content.trim()){alert('A nota está vazia.');return;}
-    const cfg=getApiConfig();if(!cfg.key){openApiModal();return;}
+    const cfg=getApiConfig();if(!canUseAI()){openApiModal();return;}
     setAiLoading(true,action);
     try{
       const prompt=action==='insights'?AI_PROMPTS.insights(content,note.tags||[]):AI_PROMPTS[action](content);
@@ -2435,7 +2041,21 @@
     }catch(e){setAiResult('Erro','Erro: '+e.message);}
     finally{setAiLoading(false,action);}
   }
-  async function callAI(cfg,prompt){return cfg.provider==='anthropic'?callAnthropic(cfg,prompt):callOpenAICompat(cfg,prompt);}
+  async function callAI(cfg,prompt){
+    if(journalFunctions){
+      try{return await callAiBackend(cfg,prompt);}
+      catch(e){console.warn('AI backend unavailable, using local fallback:',e);if(!cfg.key)throw e;}
+    }
+    if(!cfg.key)throw new Error('Configure uma chave local ou as variáveis de ambiente da IA no backend.');
+    return cfg.provider==='anthropic'?callAnthropic(cfg,prompt):callOpenAICompat(cfg,prompt);
+  }
+  async function callAiBackend(cfg,prompt){
+    const callAiFn=journalFunctions.httpsCallable('callAi');
+    const result=await callAiFn({provider:cfg.provider,model:cfg.model,prompt});
+    const text=result?.data?.text;
+    if(!text)throw new Error('Backend de IA retornou resposta vazia.');
+    return text;
+  }
   async function callOpenAICompat(cfg,prompt){const ep={groq:'https://api.groq.com/openai/v1/chat/completions',openai:'https://api.openai.com/v1/chat/completions'};const res=await fetch(ep[cfg.provider],{method:'POST',headers:{'Authorization':'Bearer '+cfg.key,'Content-Type':'application/json'},body:JSON.stringify({model:cfg.model,messages:[{role:'user',content:prompt}]})});if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||'HTTP '+res.status);}return(await res.json()).choices?.[0]?.message?.content?.trim()??'(vazio)';}
   async function callAnthropic(cfg,prompt){const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'x-api-key':cfg.key,'anthropic-version':'2023-06-01','Content-Type':'application/json'},body:JSON.stringify({model:cfg.model,max_tokens:1024,messages:[{role:'user',content:prompt}]})});if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||'HTTP '+res.status);}return(await res.json()).content?.[0]?.text?.trim()??'(vazio)';}
   function setAiLoading(on,action){document.querySelectorAll('.btn-ai').forEach(b=>b.disabled=on);if(on){document.getElementById('aiResultPanel').classList.add('open');document.getElementById('aiResultTitle').textContent=AI_TITLES[action];document.getElementById('aiResultBody').innerHTML='<div class="ai-loading"><div class="spinner"></div> Processando...</div>';}}
@@ -2646,6 +2266,7 @@
   let abQueue=[];
   let abCurrentIdx=0;
   let abAudio=null;
+  let abAudioKind='speech';
   let abPlaying=false;
   let abPaused=false;
 
@@ -2701,26 +2322,101 @@
       .trim();
   }
 
-  async function startAudiobook(){
-    if(!selectedNoteIds.size)return;
-    if(!('speechSynthesis' in window)){alert('Seu navegador não suporta leitura de voz.');return;}
-    abQueue=getFilteredNotes().filter(n=>selectedNoteIds.has(n.id));
-    if(!abQueue.length)return;
-    abCurrentIdx=0;abPlaying=true;abPaused=false;
-    document.getElementById('abPlayer').classList.remove('hidden');
+  async function abPrepareVoices(){
+    if(!('speechSynthesis' in window))return;
     await new Promise(resolve=>{
       if(window.speechSynthesis.getVoices().length>0){resolve();return;}
       window.speechSynthesis.addEventListener('voiceschanged',resolve,{once:true});
       setTimeout(resolve,800);
     });
+  }
+
+  function abAudioCacheKey(item){
+    return 'durando_audiobook_audio_'+journalHash(abBuildSpeakText(item)+'|'+(item.title||'')+'|'+(item.audiobookSource||''));
+  }
+
+  function getCachedAudiobookAudio(item){
+    try{
+      const raw=localStorage.getItem(abAudioCacheKey(item));
+      if(!raw)return null;
+      const cached=JSON.parse(raw);
+      if(!cached?.dataUrl)return null;
+      if(Date.now()-(cached.createdAt||0)>1000*60*60*24*14)return null;
+      return cached;
+    }catch{return null;}
+  }
+
+  function setCachedAudiobookAudio(item,result){
+    try{
+      localStorage.setItem(abAudioCacheKey(item),JSON.stringify({
+        dataUrl:result.dataUrl,
+        mimeType:result.mimeType||'audio/mpeg',
+        voice:result.voice||'',
+        cached:!!result.cached,
+        createdAt:Date.now()
+      }));
+    }catch(e){console.warn('Audiobook cache skipped:',e);}
+  }
+
+  async function generateAudiobookAudioForItem(item){
+    const text=abBuildSpeakText(item).slice(0,3000);
+    if(!text)return null;
+    const local=getCachedAudiobookAudio(item);
+    if(local)return local;
+    if(!journalFunctions)return null;
+    const fn=journalFunctions.httpsCallable('generateAudiobookAudio');
+    const result=await fn({
+      text,
+      title:item.title||'Audiobook',
+      source:item.audiobookSource||'note'
+    });
+    const audio=result.data||{};
+    if(!audio.dataUrl&&!audio.audioBase64)return null;
+    const normalized={
+      ...audio,
+      dataUrl:audio.dataUrl||('data:'+(audio.mimeType||'audio/mpeg')+';base64,'+audio.audioBase64)
+    };
+    setCachedAudiobookAudio(item,normalized);
+    return normalized;
+  }
+
+  async function startAudiobook(){
+    if(!selectedNoteIds.size)return;
+    if(!journalFunctions&&!('speechSynthesis' in window)){alert('Seu navegador não suporta leitura de voz.');return;}
+    abQueue=getFilteredNotes().filter(n=>selectedNoteIds.has(n.id)).map(n=>({...n,audiobookSource:'note'}));
+    if(!abQueue.length)return;
+    abCurrentIdx=0;abPlaying=true;abPaused=false;
+    document.getElementById('abPlayer').classList.remove('hidden');
+    await abPrepareVoices();
     abPlayCurrent();
   }
 
-  function abPlayCurrent(){
+  async function abPlayCurrent(){
     if(abCurrentIdx<0||abCurrentIdx>=abQueue.length){abStop();return;}
     const note=abQueue[abCurrentIdx];
     updatePlayer();
-    window.speechSynthesis.cancel();
+    abStopCurrentPlayback();
+    const playBtn=document.getElementById('abPlayPauseBtn');
+    const icon=document.getElementById('abIconPulse');
+    if(playBtn){playBtn.textContent='...';playBtn.disabled=true;}
+    if(icon)icon.classList.add('paused');
+
+    try{
+      const generated=await generateAudiobookAudioForItem(note);
+      if(generated?.dataUrl){
+        abPlayGeneratedAudio(generated.dataUrl);
+        return;
+      }
+    }catch(e){
+      console.warn('TTS backend failed, using speechSynthesis fallback:',e);
+      showToast('Voz natural indisponível. Usando voz local.');
+    }
+
+    abPlaySpeechSynthesis(note);
+  }
+
+  function abPlaySpeechSynthesis(note){
+    if(!('speechSynthesis' in window)){showToast('Audiobook indisponível neste navegador.');abStop();return;}
     const text=abBuildSpeakText(note);
     const utt=new SpeechSynthesisUtterance(text);
     utt.lang='pt-BR';
@@ -2729,7 +2425,7 @@
     utt.volume=1;
     const ptVoice=getPtVoice();
     if(ptVoice)utt.voice=ptVoice;
-    abAudio=utt;
+    abAudio=utt;abAudioKind='speech';
     const playBtn=document.getElementById('abPlayPauseBtn');
     const icon=document.getElementById('abIconPulse');
     utt.onstart=()=>{
@@ -2754,28 +2450,68 @@
     window.speechSynthesis.speak(utt);
   }
 
+  function abPlayGeneratedAudio(dataUrl){
+    const audio=new Audio(dataUrl);
+    abAudio=audio;abAudioKind='htmlaudio';
+    const playBtn=document.getElementById('abPlayPauseBtn');
+    const icon=document.getElementById('abIconPulse');
+    audio.onplay=()=>{
+      abPaused=false;
+      if(playBtn){playBtn.textContent='⏸';playBtn.disabled=false;}
+      if(icon)icon.classList.remove('paused');
+    };
+    audio.ontimeupdate=()=>{
+      if(audio.duration&&Number.isFinite(audio.duration))updateAbWave(Math.min(100,(audio.currentTime/audio.duration)*100));
+    };
+    audio.onended=()=>{
+      abCurrentIdx++;
+      if(abCurrentIdx<abQueue.length)abPlayCurrent();
+      else{abStop();showToast('Audiobook concluído');}
+    };
+    audio.onerror=()=>{
+      showToast('Erro no áudio gerado. Usando voz local.');
+      abPlaySpeechSynthesis(abQueue[abCurrentIdx]);
+    };
+    audio.play().catch(e=>{
+      console.warn('Generated audio play blocked:',e);
+      abPlaySpeechSynthesis(abQueue[abCurrentIdx]);
+    });
+  }
+
+  function abStopCurrentPlayback(){
+    if(abAudioKind==='htmlaudio'&&abAudio){
+      abAudio.pause();abAudio.src='';abAudio=null;
+    }
+    if('speechSynthesis' in window)window.speechSynthesis.cancel();
+    abAudio=null;
+  }
+
   function abTogglePause(){
     const btn=document.getElementById('abPlayPauseBtn');
     const icon=document.getElementById('abIconPulse');
     if(abPaused){
-      window.speechSynthesis.resume();abPaused=false;
+      if(abAudioKind==='htmlaudio'&&abAudio)abAudio.play();
+      else if('speechSynthesis' in window)window.speechSynthesis.resume();
+      abPaused=false;
       if(btn)btn.textContent='⏸';
       if(icon)icon.classList.remove('paused');
     }else{
-      window.speechSynthesis.pause();abPaused=true;
+      if(abAudioKind==='htmlaudio'&&abAudio)abAudio.pause();
+      else if('speechSynthesis' in window)window.speechSynthesis.pause();
+      abPaused=true;
       if(btn)btn.textContent='▶';
       if(icon)icon.classList.add('paused');
     }
   }
 
   function abSkip(dir){
-    window.speechSynthesis.cancel();abAudio=null;
+    abStopCurrentPlayback();
     abCurrentIdx=Math.max(0,Math.min(abQueue.length-1,abCurrentIdx+dir));
     abPaused=false;abPlayCurrent();
   }
 
   function abStop(){
-    window.speechSynthesis.cancel();abAudio=null;
+    abStopCurrentPlayback();abAudioKind='speech';
     abPlaying=false;abPaused=false;abQueue=[];abCurrentIdx=0;
     updateAbWave(0);
     document.getElementById('abPlayer').classList.add('hidden');
@@ -2786,7 +2522,7 @@
     const nameEl=document.getElementById('abNoteName');
     const progEl=document.getElementById('abProgressText');
     if(nameEl)nameEl.textContent=note.title||'Sem título';
-    if(progEl)progEl.textContent=(abCurrentIdx+1)+' / '+abQueue.length;
+    if(progEl)progEl.textContent=(abCurrentIdx+1)+' / '+abQueue.length+(journalFunctions?' · gerando voz natural':'');
     updateAbWave(0);
   }
 
@@ -2821,7 +2557,6 @@
     return new Date(iso).toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
   }
 
-  init();
 
   // ============================================================
   // PWA Service Worker
@@ -2830,6 +2565,7 @@
     window.addEventListener('load',()=>{
       navigator.serviceWorker.register('./sw.js')
         .then(reg=>{
+          pwaRegistration=reg;
           console.log('[PWA] SW registrado:',reg.scope);
           reg.addEventListener('updatefound',()=>{
             const nw=reg.installing;
@@ -3261,7 +2997,7 @@
     const loadingEl=appendChatMsg('ai',' ◦ ◦ ◦',true);
     try{
       const cfg=getApiConfig();
-      if(!cfg||!cfg.key){loadingEl.querySelector('.chat-msg-bubble').innerHTML='⚠️ Configure a API em <strong>Alt + A</strong> para usar o chat.';loadingEl.classList.remove('loading');sendBtn.disabled=false;return;}
+      if(!canUseAI()){loadingEl.querySelector('.chat-msg-bubble').innerHTML='⚠️ Configure a IA no backend ou adicione uma chave local em <strong>Alt + A</strong>.';loadingEl.classList.remove('loading');sendBtn.disabled=false;return;}
       const sys=buildChatSystemPrompt();
       const reply=await callChatWithHistory(cfg,sys,chatHistory);
       chatHistory.push({role:'assistant',content:reply});
@@ -3288,6 +3024,11 @@
   }
 
   async function callChatWithHistory(cfg,sys,history){
+    if(journalFunctions){
+      try{return await callChatBackend(cfg,sys,history);}
+      catch(e){console.warn('AI chat backend unavailable, using local fallback:',e);if(!cfg.key)throw e;}
+    }
+    if(!cfg.key)throw new Error('Configure uma chave local ou as variáveis de ambiente da IA no backend.');
     if(cfg.provider==='anthropic'){
       const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'x-api-key':cfg.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true','Content-Type':'application/json'},body:JSON.stringify({model:cfg.model,max_tokens:1024,system:sys,messages:history})});
       if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||'HTTP '+res.status);}
@@ -3299,6 +3040,13 @@
     const res=await fetch(ep[cfg.provider],{method:'POST',headers:{'Authorization':'Bearer '+cfg.key,'Content-Type':'application/json'},body:JSON.stringify({model:cfg.model,messages,temperature:0.5})});
     if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||'HTTP '+res.status);}
     return(await res.json()).choices?.[0]?.message?.content?.trim()||'(vazio)';
+  }
+  async function callChatBackend(cfg,sys,history){
+    const callAiChatFn=journalFunctions.httpsCallable('callAiChat');
+    const result=await callAiChatFn({provider:cfg.provider,model:cfg.model,system:sys,history});
+    const text=result?.data?.text;
+    if(!text)throw new Error('Backend de IA retornou resposta vazia.');
+    return text;
   }
 
   // Fechar modais ao clicar overlay
@@ -3315,6 +3063,9 @@
       if(!document.getElementById('chatModal').classList.contains('hidden'))closeChatCtx();
     }
   });
+
 </script>
+<script src="journal.js"></script>
+<script>init();</script>
 </body>
 </html>
