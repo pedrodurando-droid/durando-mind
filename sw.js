@@ -4,11 +4,68 @@
 //             Network First para APIs externas (Google, Groq, etc.)
 // ============================================================
 
-const CACHE_NAME = 'durando-mind-v1';
+const CACHE_NAME = 'durando-mind-v6';
+
+// Firebase Cloud Messaging usa o mesmo service worker do PWA para receber
+// notificacoes push quando o app esta fechado.
+try {
+  importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
+  importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js');
+
+  firebase.initializeApp({
+    apiKey: 'AIzaSyAyc1gGcLFbDmCw2szpZUkIynndA93F46w',
+    authDomain: 'durando-mind.firebaseapp.com',
+    projectId: 'durando-mind',
+    storageBucket: 'durando-mind.firebasestorage.app',
+    messagingSenderId: '345353224358',
+    appId: '1:345353224358:web:679533d0a587c760efb467'
+  });
+
+  const messaging = firebase.messaging();
+  messaging.onBackgroundMessage(payload => {
+    const title = payload.notification?.title || payload.data?.title || 'Jornal Durando Mind';
+    const options = {
+      body: payload.notification?.body || payload.data?.body || 'Abra o Jornal para ler o destaque do dia.',
+      icon: payload.notification?.icon || './icon-192.png',
+      badge: './icon-192.png',
+      data: payload.data || {}
+    };
+    self.registration.showNotification(title, options);
+  });
+} catch (error) {
+  console.warn('[SW] Firebase Messaging indisponivel:', error);
+}
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  // Dados do artigo enviados pelo backend (sendJournalPush)
+  const data = event.notification.data || {};
+  const targetUrl = (self.registration.scope || './') + 'durando-mind.html#jornal';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+      // Se já tem uma janela aberta, foca e navega para #jornal
+      for (const client of clientList) {
+        if (client.url && client.url.includes('durando-mind')) {
+          return client.focus().then(focused => {
+            // Envia mensagem para o app abrir a aba Jornal
+            focused.postMessage({ type: 'JOURNAL_NOTIFICATION_CLICK', data });
+            return focused;
+          });
+        }
+      }
+      // Nenhuma janela aberta: abre o app na aba Jornal
+      if (clients.openWindow) return clients.openWindow(targetUrl);
+      return null;
+    })
+  );
+});
 
 // Arquivos que ficam em cache para funcionar offline
 const ASSETS_TO_CACHE = [
   './durando-mind.html',
+  './journal.css',
+  './journal.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
@@ -19,9 +76,15 @@ const NETWORK_ONLY_DOMAINS = [
   'api.groq.com',
   'api.openai.com',
   'api.anthropic.com',
+  'api.rss2json.com',
+  'gnews.io',
+  'news.google.com',
   'googleapis.com',
   'accounts.google.com',
-  'oauth2.googleapis.com'
+  'oauth2.googleapis.com',
+  'firebaseinstallations.googleapis.com',
+  'fcmregistrations.googleapis.com',
+  'fcm.googleapis.com'
 ];
 
 // ============================================================
@@ -69,6 +132,28 @@ self.addEventListener('fetch', event => {
 
   if (isNetworkOnly) {
     event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // HTML principal: Network First para evitar que o PWA mostre uma versao antiga
+  // depois de atualizacoes grandes como a aba Jornal.
+  const isAppShell =
+    event.request.mode === 'navigate' ||
+    url.pathname.endsWith('/durando-mind.html') ||
+    url.pathname.endsWith('/');
+
+  if (isAppShell) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          if (response && response.status === 200) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put('./durando-mind.html', copy));
+          }
+          return response;
+        })
+        .catch(() => caches.match('./durando-mind.html'))
+    );
     return;
   }
 
