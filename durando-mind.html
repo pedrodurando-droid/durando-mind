@@ -938,6 +938,11 @@
             <button class="journal-btn" style="width:100%;height:36px;" onclick="sendJournalNotification(true)">Enviar teste</button>
           </div>
         </div>
+        <div class="journal-field" style="grid-column:1/-1;margin-top:6px;">
+            <label style="font-size:.8rem;font-weight:700;color:#9878d8;">Fonte de notícias por categoria</label>
+            <div style="font-size:.72rem;color:#5a5a8a;margin-bottom:8px;">Escolha de qual fonte buscar as notícias de cada tema. Muda imediatamente ao salvar.</div>
+            <div id="journalCatSourcesGrid" class="journal-settings" style="gap:8px;"></div>
+          </div>
         <div class="journal-status" id="journalSettingsStatus"></div>
       </div>
 
@@ -3012,7 +3017,37 @@
     }
   }
 
-  function mdLite(t){return esc(t).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code style="background:var(--bg-app);padding:1px 5px;border-radius:4px;font-size:12px;">$1</code>').replace(/\n/g,'<br>');}
+  function mdLite(t){
+    if(!t)return'';
+    // Processa bloco de markdown linha a linha para suportar heading, lista e parágrafo
+    const lines=String(t).split('\n');
+    let html='';
+    let inUl=false;
+    const flushUl=()=>{if(inUl){html+='</ul>';inUl=false;}};
+    const inlineFormat=s=>s
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g,'<em>$1</em>')
+      .replace(/`([^`]+)`/g,'<code style="background:var(--bg-app);padding:1px 5px;border-radius:4px;font-size:11px;">$1</code>');
+    for(let i=0;i<lines.length;i++){
+      const line=lines[i];
+      const trimmed=line.trim();
+      if(!trimmed){flushUl();if(html&&!html.endsWith('</ul>'))html+='<br>';continue;}
+      if(/^---+$/.test(trimmed)){flushUl();html+='<hr>';continue;}
+      if(/^##\s/.test(trimmed)){flushUl();html+='<h2>'+inlineFormat(trimmed.replace(/^##\s+/,''))+'</h2>';continue;}
+      if(/^###\s/.test(trimmed)){flushUl();html+='<h3>'+inlineFormat(trimmed.replace(/^###\s+/,''))+'</h3>';continue;}
+      if(/^[\-\*]\s/.test(trimmed)){
+        if(!inUl){html+='<ul>';inUl=true;}
+        html+='<li>'+inlineFormat(trimmed.replace(/^[\-\*]\s+/,''))+'</li>';
+        continue;
+      }
+      if(/^\d+\.\s/.test(trimmed)){flushUl();html+='<p>'+inlineFormat(trimmed)+'</p>';continue;}
+      flushUl();
+      html+='<p>'+inlineFormat(trimmed)+'</p>';
+    }
+    flushUl();
+    return html;
+  }
 
   function appendChatMsg(role,content,loading){
     const msgs=document.getElementById('chatMessages');
