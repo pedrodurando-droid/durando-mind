@@ -3102,5 +3102,16 @@
 </script>
 <script src="journal.js"></script>
 <script>init();</script>
+<script>
+  setTimeout(function() {
+    var cats = document.getElementById('journalCategories');
+    var grid = document.getElementById('journalNewsGrid');
+    console.log('journalCategories innerHTML:', cats ? cats.innerHTML.slice(0,100) : 'NAO ENCONTRADO');
+    console.log('journalNewsGrid innerHTML:', grid ? grid.innerHTML.slice(0,100) : 'NAO ENCONTRADO');
+    console.log('initJournal existe:', typeof initJournal);
+    console.log('refreshJournal existe:', typeof refreshJournal);
+    console.log('renderJournalCategories existe:', typeof renderJournalCategories);
+  }, 2000);
+</script>
 </body>
 </html>

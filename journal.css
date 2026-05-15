@@ -228,6 +228,7 @@
   flex-direction:column;
   position:relative;
   outline:none;
+  min-height:200px;
 }
 .news-card:hover{
   border-color:#6b4fa0;
@@ -241,11 +242,19 @@
 /* Imagem do card */
 .news-img{
   width:100%;
-  height:158px;
+  height:140px;
+  max-height:140px;
   overflow:hidden;
   background:linear-gradient(135deg,#141230,#0d0d1c);
   position:relative;
   flex-shrink:0;
+}
+.news-img::after{
+  content:'';
+  position:absolute;
+  bottom:0;left:0;right:0;
+  height:60px;
+  background:linear-gradient(transparent,#111126);
 }
 .news-img img{
   width:100%;
@@ -270,12 +279,14 @@
 
 /* Corpo do card */
 .news-body{
-  padding:12px 13px 10px;
+  padding:11px 13px 12px;
   flex:1;
   display:flex;
   flex-direction:column;
   gap:6px;
   position:relative;
+  background:transparent;
+  overflow:visible;
 }
 .news-fallback-label{
   font-size:.65rem;
@@ -317,17 +328,34 @@
 
 /* Título */
 .news-title{
-  font-size:.88rem;
-  font-weight:600;
-  color:#ddd8f8;
-  line-height:1.38;
+  font-size:.95rem;
+  font-weight:700;
+  color:#f0eaff;
+  line-height:1.33;
   display:-webkit-box;
-  -webkit-line-clamp:3;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+  padding-right:26px;
+  letter-spacing:.01em;
+}
+
+/* Sinopse abaixo do título */
+.news-synopsis{
+  font-size:.74rem;
+  color:#6868a0;
+  line-height:1.45;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
   -webkit-box-orient:vertical;
   overflow:hidden;
   flex:1;
-  padding-right:28px;
+  margin-top:1px;
 }
+
+/* Classes específicas do kicker */
+.news-source{color:#9b59b6;font-weight:600;}
+.news-date{color:#3a3a6a;}
 
 /* Botão favoritar */
 .favorite-btn{
@@ -621,14 +649,4 @@
 @media(max-width:640px){
   .journal-head{padding:12px 14px 8px;}
   .journal-grid{
-    grid-template-columns:1fr;
-    padding:10px 12px 24px;
-  }
-  #journalDetail,.journal-detail{
-    width:100%;
-    border-left:none;
-    border-top:1px solid #222245;
-  }
-  .jd-content{padding:14px 16px 28px;}
-  .journal-settings{grid-template-columns:1fr;}
-}
+    grid-template-columns:1fr

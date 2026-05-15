@@ -6,73 +6,80 @@
     {id:'ia',label:'IA',
       query:'inteligência artificial OR IA OR ChatGPT',
       sources:[
-        {label:'Padrão (Google News)',query:null},
-        {label:'OpenAI Blog',query:'site:openai.com OR openai blog'},
-        {label:'TechCrunch AI',query:'site:techcrunch.com artificial intelligence'},
-        {label:'The Verge AI',query:'site:theverge.com AI'},
-        {label:'MIT Tech Review',query:'site:technologyreview.com AI'},
+        {label:'Google News (padrão)',type:'googleNews',query:'inteligência artificial OR IA OR ChatGPT'},
+        {label:'OpenAI News',type:'rss',url:'https://openai.com/news/rss.xml'},
+        {label:'Google DeepMind Blog',type:'rss',url:'https://deepmind.google/discover/blog/rss.xml'},
+        {label:'Hugging Face Blog',type:'rss',url:'https://huggingface.co/blog/feed.xml'},
+        {label:'MIT Tech Review AI',type:'googleNews',query:'site:technologyreview.com artificial intelligence'},
+        {label:'VentureBeat AI',type:'googleNews',query:'site:venturebeat.com/category/ai artificial intelligence'},
       ]},
     {id:'programacao',label:'Programação',
       query:'programação OR desenvolvimento de software OR tecnologia',
       sources:[
-        {label:'Padrão (Google News)',query:null},
-        {label:'Dev.to',query:'site:dev.to programming'},
-        {label:'Hacker News',query:'site:news.ycombinator.com'},
-        {label:'GitHub Blog',query:'site:github.blog'},
-        {label:'InfoQ',query:'site:infoq.com software development'},
+        {label:'Google News (padrão)',type:'googleNews',query:'programação OR desenvolvimento de software OR tecnologia'},
+        {label:'GitHub Blog',type:'rss',url:'https://github.blog/feed/'},
+        {label:'GitHub Changelog',type:'rss',url:'https://github.blog/changelog/feed/'},
+        {label:'Stack Overflow Blog',type:'rss',url:'https://stackoverflow.blog/feed/'},
+        {label:'InfoQ Software',type:'rss',url:'https://feed.infoq.com/news'},
+        {label:'Hacker News',type:'rss',url:'https://news.ycombinator.com/rss'},
       ]},
     {id:'esportes',label:'Esportes',
       query:'esportes hoje',
       sources:[
-        {label:'Padrão (Google News)',query:null},
-        {label:'ESPN Brasil',query:'site:espn.com.br esportes'},
-        {label:'Globo Esporte',query:'site:ge.globo.com'},
-        {label:'Lance!',query:'site:lance.com.br'},
+        {label:'Google News (padrão)',type:'googleNews',query:'esportes hoje'},
+        {label:'ge.globo Esportes',type:'rss',url:'https://ge.globo.com/rss/ge/ultimas-noticias/'},
+        {label:'ESPN Brasil',type:'googleNews',query:'site:espn.com.br esportes'},
+        {label:'BBC Sport',type:'rss',url:'https://feeds.bbci.co.uk/sport/rss.xml'},
+        {label:'Reuters Sports',type:'googleNews',query:'site:reuters.com/sports sports'},
       ]},
     {id:'nba',label:'NBA',
       query:'NBA basquete',
       sources:[
-        {label:'Padrão (Google News)',query:null},
-        {label:'ESPN NBA',query:'site:espn.com NBA basketball'},
-        {label:'NBA.com',query:'site:nba.com news'},
-        {label:'Bleacher Report NBA',query:'site:bleacherreport.com NBA'},
+        {label:'Google News (padrão)',type:'googleNews',query:'NBA basquete'},
+        {label:'ESPN NBA',type:'googleNews',query:'site:espn.com/nba NBA'},
+        {label:'HoopsHype',type:'rss',url:'https://hoopshype.com/feed/'},
+        {label:'The Athletic NBA',type:'googleNews',query:'site:nytimes.com/athletic/nba NBA'},
+        {label:'NBA.com',type:'googleNews',query:'site:nba.com/news NBA'},
       ]},
     {id:'futebol',label:'Futebol',
       query:'futebol brasileiro OR futebol mundial',
       sources:[
-        {label:'Padrão (Google News)',query:null},
-        {label:'GE (Globo Esporte)',query:'site:ge.globo.com futebol'},
-        {label:'UOL Esporte',query:'site:uol.com.br esporte futebol'},
-        {label:'ESPN Futebol',query:'site:espn.com.br futebol'},
-        {label:'Trivela',query:'site:trivela.com.br'},
+        {label:'Google News (padrão)',type:'googleNews',query:'futebol brasileiro OR futebol mundial'},
+        {label:'ge.globo Futebol',type:'rss',url:'https://ge.globo.com/rss/ge/futebol/'},
+        {label:'ge.globo Brasileirão',type:'rss',url:'https://ge.globo.com/rss/ge/brasileirao-serie-a/'},
+        {label:'ESPN Brasil Futebol',type:'googleNews',query:'site:espn.com.br/futebol futebol'},
+        {label:'BBC Football',type:'rss',url:'https://feeds.bbci.co.uk/sport/football/rss.xml'},
       ]},
     {id:'ufc-mma',label:'UFC/MMA',
       query:'UFC OR MMA',
       sources:[
-        {label:'Padrão (Google News)',query:null},
-        {label:'MMA Fighting',query:'site:mmafighting.com'},
-        {label:'Bloody Elbow',query:'site:bloodyelbow.com'},
-        {label:'UFC.com',query:'site:ufc.com news'},
+        {label:'Google News (padrão)',type:'googleNews',query:'UFC OR MMA'},
+        {label:'Sherdog MMA News',type:'rss',url:'https://www.sherdog.com/rss/news.xml'},
+        {label:'MMA Fighting',type:'rss',url:'https://www.mmafighting.com/rss/current'},
+        {label:'MMA Junkie',type:'rss',url:'https://mmajunkie.usatoday.com/feed'},
+        {label:'ESPN MMA',type:'googleNews',query:'site:espn.com.br/mma UFC OR MMA'},
       ]},
     {id:'mercado',label:'Mercado econômico',
       query:'mercado financeiro OR economia OR bolsa de valores',
       sources:[
-        {label:'Padrão (Google News)',query:null},
-        {label:'Valor Econômico',query:'site:valor.globo.com'},
-        {label:'InfoMoney',query:'site:infomoney.com.br'},
-        {label:'Bloomberg',query:'site:bloomberg.com economy'},
-        {label:'Reuters Economia',query:'site:reuters.com economy Brazil'},
+        {label:'Google News (padrão)',type:'googleNews',query:'mercado financeiro OR economia OR bolsa de valores'},
+        {label:'Reuters Markets',type:'googleNews',query:'site:reuters.com/markets economy markets finance'},
+        {label:'Valor Econômico',type:'googleNews',query:'site:valor.globo.com mercado economia'},
+        {label:'InfoMoney',type:'googleNews',query:'site:infomoney.com.br mercado'},
+        {label:'CNBC Markets',type:'googleNews',query:'site:cnbc.com/markets economy finance'},
+        {label:'Bloomberg',type:'googleNews',query:'site:bloomberg.com markets economy'},
       ]},
     {id:'mundo',label:'Mundo',
       query:'notícias internacionais OR mundo',
       sources:[
-        {label:'Padrão (Google News)',query:null},
-        {label:'BBC Brasil',query:'site:bbc.com/portuguese'},
-        {label:'Reuters',query:'site:reuters.com world news'},
-        {label:'Al Jazeera',query:'site:aljazeera.com'},
-        {label:'The Guardian',query:'site:theguardian.com world'},
+        {label:'Google News (padrão)',type:'googleNews',query:'notícias internacionais OR mundo'},
+        {label:'BBC Brasil',type:'rss',url:'https://feeds.bbci.co.uk/portuguese/rss.xml'},
+        {label:'Reuters World',type:'googleNews',query:'site:reuters.com world news'},
+        {label:'Al Jazeera',type:'googleNews',query:'site:aljazeera.com world news'},
+        {label:'The Guardian World',type:'rss',url:'https://www.theguardian.com/world/rss'},
+        {label:'AP News World',type:'googleNews',query:'site:apnews.com world news'},
       ]},
-  ];
+  ]
 
   // Funções de fonte por categoria
   function getJournalCatSource(catId){
@@ -90,8 +97,6 @@
     if(saved===null||saved===undefined)return cat.query;
     return saved||cat.query;
   }
-
-  let journalDetailArticle=null;
 
   function initJournal(){
     journalFavorites=loadJournalFavoritesLocal();
@@ -149,8 +154,10 @@
     host.innerHTML=JOURNAL_CATEGORIES.map(function(cat){
       const saved=getJournalCatSource(cat.id);
       const opts=(cat.sources||[]).map(function(s){
-        const val=s.query===null?'':s.query;
-        const sel=((saved===null||saved===undefined)&&val==='')||(saved===val)?'selected':'';
+        // Usa url (RSS direto) ou query (Google News) como identificador
+        const val=(s.url||s.query||'');
+        const isDefault=val===(cat.sources[0].url||cat.sources[0].query||'');
+        const sel=((saved===null||saved===undefined)&&isDefault)||(saved===val)?'selected':'';
         return '<option value="'+esc(val)+'" '+sel+'>'+esc(s.label)+'</option>';
       }).join('');
       const catId=cat.id;
@@ -495,17 +502,37 @@
     },cat)).filter(Boolean);
   }
 
-  async function fetchJournalFromRss2Json(cat){
-    const q=getJournalQueryForCat(cat);
+  // Monta URL do rss2json a partir de um feed RSS direto ou de uma query Google News
+  function buildRss2JsonUrl(source,cat){
+    const catSource=source||{type:'googleNews',query:(cat.query||cat.label)};
+    if(catSource.type==='rss'&&catSource.url){
+      // URL RSS direta — ex: github.blog/feed/, ge.globo.com/rss/...
+      return 'https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(catSource.url);
+    }
+    // Tipo googleNews (padrão): query via Google News RSS
+    const q=catSource.query||cat.query||cat.label;
     const rss='https://news.google.com/rss/search?q='+encodeURIComponent(q)+'&hl=pt-BR&gl=BR&ceid=BR:pt-419';
-    const url='https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(rss);
+    return 'https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(rss);
+  }
+
+  // Retorna o objeto de fonte selecionada (ou null para usar padrão)
+  function getSelectedCatSource(cat){
+    const savedQuery=getJournalCatSource(cat.id);
+    if(savedQuery===null||savedQuery===undefined)return null; // padrão
+    // encontra na lista de fontes pelo query/url salvo
+    return (cat.sources||[]).find(s=>(s.url||s.query)===savedQuery)||null;
+  }
+
+  async function fetchJournalFromRss2Json(cat){
+    const source=getSelectedCatSource(cat);
+    const url=buildRss2JsonUrl(source,cat);
     let res;
     try{res=await fetch(url);}
     catch(e){throw new Error('rss2json não respondeu. Verifique sua internet, bloqueador de rede ou CORS. Detalhe: '+(e.message||e));}
     const data=await res.json().catch(()=>({}));
     if(!res.ok)throw new Error('rss2json retornou HTTP '+res.status+'. O serviço pode estar fora do ar ou limitado.');
     if(data.status==='error')throw new Error('rss2json recusou o feed: '+(data.message||'erro sem detalhe'));
-    return (data.items||[]).slice(0,12).map(item=>normalizeJournalArticle(item,cat)).filter(Boolean);
+    return (data.items||[]).slice(0,12).map(function(item){return normalizeJournalArticle(item,cat);}).filter(Boolean);
   }
 
   function explainJournalError(e){
@@ -643,8 +670,9 @@
       '<div class="news-img '+(a.image?'':'no-img')+'">'+(img||'<span class="news-initials">'+initials+'</span>')+'</div>'+
       '<div class="news-body">'+
         (a.isFallback?'<div class="news-fallback-label">Exemplo local</div>':'')+
-        '<div class="news-kicker"><span class="news-cat">'+esc(a.categoryLabel||'')+'</span><span>'+esc(a.source||'')+'</span><span>'+formatJournalDate(a.date)+'</span></div>'+
+        '<div class="news-kicker"><span class="news-cat">'+esc(a.categoryLabel||'')+'</span><span class="news-source">'+esc(a.source||'')+'</span><span class="news-date">'+formatJournalDate(a.date)+'</span></div>'+
         '<div class="news-title">'+esc(a.title)+'</div>'+
+        (function(){var snip=(a.summary||'').replace(/\s+/g,' ').trim().slice(0,110);return snip?'<div class="news-synopsis">'+esc(snip+(snip.length>=110?'\u2026':''))+'</div>':'';})()+
         '<button class="favorite-btn '+(fav?'active':'')+'" title="'+(fav?'Desfavoritar':'Favoritar')+'" onclick="event.stopPropagation();toggleJournalFavorite(\''+a.id+'\')">'+(fav?'★':'☆')+'</button>'+
       '</div>'+
     '</article>';
