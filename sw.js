@@ -4,7 +4,7 @@
 //             Network First para APIs externas (Google, Groq, etc.)
 // ============================================================
 
-const CACHE_NAME = 'durando-mind-v6';
+const CACHE_NAME = 'durando-mind-v7';
 
 // Firebase Cloud Messaging usa o mesmo service worker do PWA para receber
 // notificacoes push quando o app esta fechado.
