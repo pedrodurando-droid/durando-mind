@@ -79,7 +79,19 @@
         {label:'The Guardian World',type:'rss',url:'https://www.theguardian.com/world/rss'},
         {label:'AP News World',type:'googleNews',query:'site:apnews.com world news'},
       ]},
-  ]
+  ];
+  const CAT_COLORS={
+    ia:'#7c5cbf',
+    programacao:'#3a8abf',
+    esportes:'#3abf7c',
+    nba:'#bf7c3a',
+    futebol:'#3a7cbf',
+    'ufc-mma':'#bf3a3a',
+    mercado:'#8abf3a',
+    mundo:'#bf3abf'
+  };
+  const JOURNAL_ALL_SOURCES='all';
+  let journalActiveSourceFilter={};
 
   // Funções de fonte por categoria
   function getJournalCatSource(catId){
@@ -123,7 +135,9 @@
     const host=document.getElementById('journalCategories');
     const notifySel=document.getElementById('journalNotifyCategory');
     if(host){
-      host.innerHTML=JOURNAL_CATEGORIES.map(c=>'<button class="journal-chip '+(journalSelectedCategory===c.id?'active':'')+'" onclick="selectJournalCategory(\''+c.id+'\')">'+esc(c.label)+'</button>').join('');
+      const feed='<button class="journal-chip '+(journalSelectedCategory==='feed'?'active':'')+'" onclick="selectJournalCategory(\'feed\')">Feed</button>';
+      host.innerHTML=feed+JOURNAL_CATEGORIES.map(c=>'<button class="journal-chip '+(journalSelectedCategory===c.id?'active':'')+'" onclick="selectJournalCategory(\''+c.id+'\')">'+esc(c.label)+'</button>').join('');
+      renderJournalSourceTabs();
     }
     if(notifySel){
       notifySel.innerHTML=JOURNAL_CATEGORIES.map(c=>'<option value="'+c.id+'">'+esc(c.label)+'</option>').join('');
@@ -224,6 +238,11 @@
     refreshJournal(false);
   }
 
+  function selectJournalSource(catId,key){
+    journalActiveSourceFilter[catId]=key||JOURNAL_ALL_SOURCES;
+    renderJournal();
+  }
+
   function toggleJournalFavoritesView(){
     journalFavoriteView=!journalFavoriteView;
     const btn=document.getElementById('journalFavViewBtn');
@@ -244,6 +263,7 @@
     renderJournalDetailContent(a);
     panel.classList.add('open');
     document.getElementById('journalOverlay')?.classList.add('open');
+    document.body.classList.add('journal-open');
   }
 
   function closeJournalDetail(){
@@ -251,6 +271,7 @@
     if(panel)panel.classList.remove('open');
     document.getElementById('journalOverlay')?.classList.remove('open');
     journalDetailArticle=null;
+    document.body.classList.remove('journal-open');
   }
 
   function renderJournalDetailContent(a){
@@ -274,6 +295,7 @@
           '<a class="jd-open-link" href="'+esc(a.link)+'" target="_blank" rel="noopener">↗ Original</a>'+
         '</div>'+
       '</div>'+
+      '<div class="jd-scroll-wrap">'+
       heroHtml+
       '<div class="jd-content">'+
         '<div class="jd-meta">'+
@@ -298,7 +320,24 @@
           '</div>'+
           '<div class="jd-ai-result" id="jdAiResult"></div>'+
         '</div>'+
+      '</div>'+
       '</div>';
+    const aiActions=panel.querySelector('.jd-ai-actions');
+    if(aiActions&&!aiActions.querySelector('[data-journal-translate]')){
+      const translateBtn=document.createElement('button');
+      translateBtn.className='jd-ai-btn';
+      translateBtn.setAttribute('data-journal-translate','1');
+      translateBtn.textContent='Traduzir';
+      translateBtn.onclick=function(){runJournalAI('translate',a.id);};
+      aiActions.insertBefore(translateBtn,aiActions.querySelector('.accent')||aiActions.lastElementChild);
+    }
+    let _touchStartX=0;
+    panel.addEventListener('touchstart',function(e){
+      _touchStartX=e.touches[0].clientX;
+    },{passive:true});
+    panel.addEventListener('touchend',function(e){
+      if(e.changedTouches[0].clientX-_touchStartX>80)closeJournalDetail();
+    },{passive:true});
   }
 
   async function toggleJournalFavoriteInDetail(id){
@@ -316,6 +355,10 @@
   // BUSCA E CACHE
   // ============================================================
   async function refreshJournal(force){
+    if(journalSelectedCategory==='feed'){
+      await refreshJournalFeed(force);
+      return;
+    }
     const cat=journalCat(journalSelectedCategory);
     if(journalFavoriteView){renderJournal();return;}
     if(journalLoading)return;
@@ -342,7 +385,7 @@
     renderJournal();
     try{
       journalLastFetchMeta=null;
-      const items=await fetchJournalArticles(cat);
+      const items=await fetchJournalCategorySources(cat);
       journalArticles[cat.id]=items;
       const mode=items.length?'real':'empty';
       const meta=journalLastFetchMeta||{};
@@ -378,14 +421,97 @@
     }
   }
 
+  async function refreshJournalFeed(force){
+    if(journalFavoriteView){renderJournal();return;}
+    if(journalLoading)return;
+    const needsLoad=force||JOURNAL_CATEGORIES.some(cat=>!(journalArticles[cat.id]&&journalArticles[cat.id].length)&&!getJournalCache(cat.id));
+    if(!needsLoad){
+      JOURNAL_CATEGORIES.forEach(cat=>{
+        const cached=getJournalCache(cat.id);
+        if(cached&&(!journalArticles[cat.id]||!journalArticles[cat.id].length)){
+          journalArticles[cat.id]=cached.items;
+          journalSourceState[cat.id]={
+            mode:'cache',
+            cachedMode:cached.mode||inferJournalMode(cached.items),
+            fetchedAt:cached.fetchedAt||Date.now(),
+            message:cached.message||'Exibindo conteudo salvo localmente.',
+            source:cached.source||'local-cache',
+            sourceLabel:cached.sourceLabel||'cache local',
+            error:cached.error||''
+          };
+        }
+      });
+      renderJournal();
+      return;
+    }
+    journalLoading=true;
+    renderJournal();
+    for(const cat of JOURNAL_CATEGORIES){
+      const cached=getJournalCache(cat.id);
+      if(cached&&!force){
+        journalArticles[cat.id]=cached.items;
+        journalSourceState[cat.id]={
+          mode:'cache',
+          cachedMode:cached.mode||inferJournalMode(cached.items),
+          fetchedAt:cached.fetchedAt||Date.now(),
+          message:cached.message||'Exibindo conteudo salvo localmente.',
+          source:cached.source||'local-cache',
+          sourceLabel:cached.sourceLabel||'cache local',
+          error:cached.error||''
+        };
+        continue;
+      }
+      try{
+        journalLastFetchMeta=null;
+        const items=await fetchJournalCategorySources(cat);
+        journalArticles[cat.id]=items;
+        const meta=journalLastFetchMeta||{};
+        journalSourceState[cat.id]={
+          mode:items.length?'real':'empty',
+          fetchedAt:Date.now(),
+          message:meta.message||(items.length?'Noticias reais carregadas da fonte configurada.':'A fonte respondeu, mas nao retornou noticias para esta categoria.'),
+          source:meta.source||'unknown',
+          sourceLabel:meta.sourceLabel||journalSourceLabel(meta.source),
+          externalSource:meta.externalSource||'',
+          error:meta.backendError?('Backend indisponivel: '+meta.backendError):''
+        };
+        setJournalCache(cat.id,items,journalSourceState[cat.id]);
+      }catch(e){
+        console.warn('Journal feed fetch error:',cat.id,e);
+        const readable=explainJournalError(e);
+        const fallback=buildJournalFallback(cat,readable);
+        journalArticles[cat.id]=fallback;
+        journalSourceState[cat.id]={
+          mode:'fallback',
+          fetchedAt:Date.now(),
+          message:'A fonte de noticias falhou. Mostrando fallback local.',
+          source:'fallback-local',
+          sourceLabel:'fallback local',
+          error:readable
+        };
+        setJournalCache(cat.id,fallback,journalSourceState[cat.id]);
+      }
+    }
+    journalLoading=false;
+    renderJournal();
+  }
+
   function getJournalCache(catId){
     try{
       const c=JSON.parse(localStorage.getItem(journalCacheKey(catId))||'null');
       if(!c||!c.items)return null;
+      c.items=c.items.map(normalizeJournalCachedArticle);
       const age=(Date.now()-(c.fetchedAt||0))/36e5;
       if(c.day===journalTodayKey()&&age<JOURNAL_CACHE_HOURS)return c;
     }catch{}
     return null;
+  }
+
+  function normalizeJournalCachedArticle(a){
+    if(!a)return a;
+    if(!a.sourceFilterKey)a.sourceFilterKey=a.source||'';
+    if(!a.sourceFilterLabel)a.sourceFilterLabel=a.source||'Fonte externa';
+    return a;
   }
   function setJournalCache(catId,items,state){
     localStorage.setItem(journalCacheKey(catId),JSON.stringify({
@@ -483,7 +609,9 @@
       link,
       image:raw.image||'',
       category:raw.category||cat.id,
-      categoryLabel:raw.categoryLabel||cat.label
+      categoryLabel:raw.categoryLabel||cat.label,
+      sourceFilterKey:stripHtml(raw.source||'Fonte externa'),
+      sourceFilterLabel:stripHtml(raw.source||'Fonte externa')
     };
   }
 
@@ -516,6 +644,15 @@
   }
 
   // Retorna o objeto de fonte selecionada (ou null para usar padrão)
+  function journalSourceKey(source){
+    return source?(source.url||source.query||source.label||''):'';
+  }
+
+  function getJournalSourcesForCat(cat){
+    const sources=(cat.sources&&cat.sources.length)?cat.sources:[{label:'Google News (padrao)',type:'googleNews',query:(cat.query||cat.label)}];
+    return sources.filter(s=>journalSourceKey(s));
+  }
+
   function getSelectedCatSource(cat){
     const savedQuery=getJournalCatSource(cat.id);
     if(savedQuery===null||savedQuery===undefined)return null; // padrão
@@ -525,6 +662,10 @@
 
   async function fetchJournalFromRss2Json(cat){
     const source=getSelectedCatSource(cat);
+    return fetchJournalSourceItems(cat,source);
+  }
+
+  async function fetchJournalSourceItems(cat,source){
     const url=buildRss2JsonUrl(source,cat);
     let res;
     try{res=await fetch(url);}
@@ -532,7 +673,47 @@
     const data=await res.json().catch(()=>({}));
     if(!res.ok)throw new Error('rss2json retornou HTTP '+res.status+'. O serviço pode estar fora do ar ou limitado.');
     if(data.status==='error')throw new Error('rss2json recusou o feed: '+(data.message||'erro sem detalhe'));
-    return (data.items||[]).slice(0,12).map(function(item){return normalizeJournalArticle(item,cat);}).filter(Boolean);
+    const sourceKey=journalSourceKey(source)||journalSourceKey((cat.sources||[])[0])||cat.query;
+    const sourceLabel=source?.label||'Google News';
+    return (data.items||[]).slice(0,12).map(function(item){
+      const article=normalizeJournalArticle(item,cat);
+      if(article){
+        article.sourceFilterKey=sourceKey;
+        article.sourceFilterLabel=sourceLabel;
+      }
+      return article;
+    }).filter(Boolean);
+  }
+
+  async function fetchJournalCategorySources(cat){
+    const sources=getJournalSourcesForCat(cat);
+    if(!sources.length)return fetchJournalArticles(cat);
+    const settled=await Promise.allSettled(sources.map(source=>fetchJournalSourceItems(cat,source)));
+    const items=[];
+    const errors=[];
+    const seen=new Set();
+    settled.forEach(function(result){
+      if(result.status!=='fulfilled'){
+        errors.push(result.reason?.message||String(result.reason));
+        return;
+      }
+      result.value.forEach(function(article){
+        const key=article.link||article.id;
+        if(!key||seen.has(key))return;
+        seen.add(key);
+        items.push(article);
+      });
+    });
+    if(!items.length&&errors.length)throw new Error(errors[0]);
+    journalLastFetchMeta={
+      source:'browser-rss2json',
+      sourceLabel:items.length?'fontes da categoria':'rss2json',
+      externalSource:'multiple',
+      message:errors.length
+        ?'Noticias carregadas parcialmente. Algumas fontes nao responderam.'
+        :'Noticias reais carregadas das fontes configuradas da categoria.'
+    };
+    return items.sort((a,b)=>(new Date(b.date||0).getTime()||0)-(new Date(a.date||0).getTime()||0)).slice(0,48);
   }
 
   function explainJournalError(e){
@@ -558,6 +739,8 @@
       source,date,link,image,
       category:cat.id,
       categoryLabel:cat.label,
+      sourceFilterKey:source,
+      sourceFilterLabel:source,
     };
   }
 
@@ -601,14 +784,84 @@
   // ============================================================
   // RENDER
   // ============================================================
+  function renderJournalSourceTabs(){
+    const catsHost=document.getElementById('journalCategories');
+    if(!catsHost||!catsHost.parentElement)return;
+    let host=document.getElementById('journalSourceTabs');
+    if(!host){
+      host=document.createElement('div');
+      host.id='journalSourceTabs';
+      host.className='journal-source-tabs';
+      catsHost.parentElement.appendChild(host);
+    }
+    if(journalFavoriteView||journalSelectedCategory==='feed'){
+      host.innerHTML='';
+      host.classList.add('hidden');
+      return;
+    }
+    const cat=journalCat(journalSelectedCategory);
+    const items=journalArticles[cat.id]||[];
+    const counts={};
+    items.forEach(function(a){
+      const key=a.sourceFilterKey||a.source||'';
+      if(key)counts[key]=(counts[key]||0)+1;
+    });
+    const active=journalActiveSourceFilter[cat.id]||JOURNAL_ALL_SOURCES;
+    const tabs=['<button class="journal-source-chip '+(active===JOURNAL_ALL_SOURCES?'active':'')+'" onclick="selectJournalSource(\''+cat.id+'\',\''+JOURNAL_ALL_SOURCES+'\')">Todas <span>'+items.length+'</span></button>'];
+    const rendered=new Set();
+    getJournalSourcesForCat(cat).forEach(function(source){
+      const key=journalSourceKey(source);
+      rendered.add(key);
+      const count=counts[key]||0;
+      tabs.push('<button class="journal-source-chip '+(active===key?'active':'')+'" onclick="selectJournalSource(\''+cat.id+'\',\''+escJs(key)+'\')">'+esc(source.label||key)+' <span>'+count+'</span></button>');
+    });
+    items.forEach(function(a){
+      const key=a.sourceFilterKey||a.source||'';
+      if(!key||rendered.has(key))return;
+      rendered.add(key);
+      tabs.push('<button class="journal-source-chip '+(active===key?'active':'')+'" onclick="selectJournalSource(\''+cat.id+'\',\''+escJs(key)+'\')">'+esc(a.sourceFilterLabel||a.source||key)+' <span>'+(counts[key]||0)+'</span></button>');
+    });
+    host.classList.remove('hidden');
+    host.innerHTML=tabs.join('');
+  }
+
+  function filterJournalItemsBySource(cat,items){
+    const active=journalActiveSourceFilter[cat.id]||JOURNAL_ALL_SOURCES;
+    if(active===JOURNAL_ALL_SOURCES)return items;
+    return items.filter(a=>(a.sourceFilterKey||a.source||'')===active);
+  }
+
+  function escJs(s){
+    return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\r?\n/g,' ');
+  }
+
   function renderJournal(){
     renderJournalCategories();
+    renderJournalSourceTabs();
     renderJournalSettingsStatus();
     const status=document.getElementById('journalStatus');
     const grid=document.getElementById('journalNewsGrid');
     if(!status||!grid)return;
+    const isFeed=journalSelectedCategory==='feed'&&!journalFavoriteView;
+    grid.classList.toggle('journal-feed-list',isFeed);
+    if(isFeed){
+      const items=getJournalFeedItems();
+      if(journalLoading){
+        status.innerHTML=renderJournalFeedState(items,true);
+        grid.innerHTML='';
+        return;
+      }
+      status.innerHTML=renderJournalFeedState(items,false);
+      if(!items.length){
+        grid.innerHTML='<div class="journal-empty"><div class="journal-empty-title">Feed ainda vazio</div><div>Clique em <strong>Atualizar agora</strong> para buscar noticias de todos os temas.</div></div>';
+        return;
+      }
+      grid.innerHTML=items.map(renderFeedCard).join('');
+      return;
+    }
     const cat=journalCat(journalSelectedCategory);
-    const items=journalFavoriteView?journalFavorites:(journalArticles[cat.id]||[]);
+    const allItems=journalFavoriteView?journalFavorites:(journalArticles[cat.id]||[]);
+    const items=journalFavoriteView?allItems:filterJournalItemsBySource(cat,allItems);
     if(journalLoading){
       status.innerHTML=renderJournalState({...journalSourceState[cat.id],mode:'loading'},cat);
       grid.innerHTML='';
@@ -625,6 +878,28 @@
       return;
     }
     grid.innerHTML=items.map(renderNewsCard).join('');
+  }
+
+  function getJournalFeedItems(){
+    const seen=new Set();
+    const items=[];
+    JOURNAL_CATEGORIES.forEach(cat=>{
+      (journalArticles[cat.id]||[]).forEach(a=>{
+        const key=a.link||a.id;
+        if(!key||seen.has(key))return;
+        seen.add(key);
+        items.push(a);
+      });
+    });
+    return items.sort((a,b)=>(new Date(b.date||0).getTime()||0)-(new Date(a.date||0).getTime()||0));
+  }
+
+  function renderJournalFeedState(items,loading){
+    const loaded=JOURNAL_CATEGORIES.filter(cat=>journalArticles[cat.id]&&journalArticles[cat.id].length).length;
+    if(loading){
+      return '<div class="journal-state cache"><div class="journal-state-left"><div class="spinner"></div><div><div class="journal-state-title">Carregando Feed</div><div class="journal-state-desc">Buscando noticias das categorias configuradas.</div></div></div><div class="journal-state-meta">'+loaded+'/'+JOURNAL_CATEGORIES.length+' temas</div></div>';
+    }
+    return '<div class="journal-state '+(items.length?'real':'empty')+'"><div class="journal-state-left"><div class="journal-state-dot"></div><div><div class="journal-state-title">Feed geral</div><div class="journal-state-desc">Noticias de todos os temas misturadas e ordenadas por data.</div></div></div><div class="journal-state-meta">'+items.length+' noticia(s) · '+loaded+'/'+JOURNAL_CATEGORIES.length+' temas</div></div>';
   }
 
   function renderJournalState(state,cat,items){
@@ -678,6 +953,18 @@
     '</article>';
   }
 
+  function renderFeedCard(a){
+    const color=CAT_COLORS[a.category]||'#6b3fa0';
+    const snip=(a.summary||'').replace(/\s+/g,' ').trim().slice(0,200);
+    return '<article class="feed-card '+(a.isFallback?'fallback':'')+'" style="--cat-color:'+esc(color)+'" onclick="openJournalDetail(\''+a.id+'\')" role="button" tabindex="0">'+
+      '<div class="feed-card-kicker"><span class="news-cat">'+esc(a.categoryLabel||'')+'</span><span class="feed-card-source">'+esc(a.source||'')+'</span><span class="feed-card-date">'+formatJournalDate(a.date)+'</span></div>'+
+      (a.isFallback?'<div class="news-fallback-label">Exemplo local</div>':'')+
+      '<div class="feed-card-title">'+esc(a.title)+'</div>'+
+      (snip?'<div class="feed-card-synopsis">'+esc(snip+(snip.length>=200?'\u2026':''))+'</div>':'')+
+      '<button class="feed-card-btn" onclick="event.stopPropagation();openJournalDetail(\''+a.id+'\')">Ler noticia completa &rarr;</button>'+
+    '</article>';
+  }
+
   function getJournalArticle(id){
     for(const list of Object.values(journalArticles)){const a=list.find(x=>x.id===id);if(a)return a;}
     return journalFavorites.find(x=>x.id===id)||null;
@@ -692,6 +979,14 @@
   async function runJournalAI(action,id){
     const a=getJournalArticle(id);if(!a)return;
     const cfg=getApiConfig();if(!canUseAI()){openApiModal();return;}
+    if(action==='translate'){
+      const title='Tradução';
+      const prompt='Detecte automaticamente o idioma da noticia abaixo e traduza para portugues brasileiro natural, preservando nomes, numeros, datas e o sentido jornalistico. Nao resuma e nao acrescente opinioes. Estruture assim:\n\n## Traducao\n\n[texto traduzido]\n\n## Idioma detectado\n\n[idioma detectado]\n\nNoticia:\n\n';
+      setJournalAiLoading(title);
+      try{setJournalAiResult(title,await callAI(cfg,prompt+journalArticleText(a)));}
+      catch(e){setJournalAiResult('Erro ao traduzir','Erro: '+e.message);}
+      return;
+    }
     const titles={summarize:'Resumo',insights:'Insights',ideas:'Ideias práticas',expand:'Artigo expandido'};
     const title=titles[action]||'IA';
     const prompts={

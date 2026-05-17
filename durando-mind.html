@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
   <link rel="manifest" href="manifest.json"/>
-  <link rel="stylesheet" href="journal.css?v=1.5"/>
+  <link rel="stylesheet" href="journal.css?v=1.6"/>
   <link rel="apple-touch-icon" href="icon-192.png"/>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='2' y='2' width='28' height='28' rx='8' fill='%23111114'/><circle cx='10' cy='11' r='2' fill='%23C9BBFF'/><circle cx='22' cy='11' r='2' fill='%23C9BBFF'/><circle cx='10' cy='21' r='2' fill='%23C9BBFF'/><circle cx='22' cy='21' r='2' fill='%23C9BBFF'/><circle cx='16' cy='16' r='2.5' fill='%23C9BBFF'/><line x1='10' y1='11' x2='16' y2='16' stroke='%23C9BBFF' stroke-width='1.2' opacity='.5'/><line x1='22' y1='11' x2='16' y2='16' stroke='%23C9BBFF' stroke-width='1.2' opacity='.5'/><line x1='10' y1='21' x2='16' y2='16' stroke='%23C9BBFF' stroke-width='1.2' opacity='.5'/><line x1='22' y1='21' x2='16' y2='16' stroke='%23C9BBFF' stroke-width='1.2' opacity='.5'/></svg>"/>
 
@@ -706,6 +706,8 @@
     <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#4285F4" d="M47.532 24.552c0-1.636-.146-3.2-.418-4.698H24v8.883h13.164c-.567 3.059-2.29 5.65-4.878 7.389v6.139h7.897c4.62-4.254 7.349-10.52 7.349-17.713z"/><path fill="#34A853" d="M24 48c6.617 0 12.167-2.194 16.223-5.935l-7.897-6.139c-2.193 1.47-4.994 2.34-8.326 2.34-6.403 0-11.827-4.325-13.77-10.14H2.018v6.34C6.058 42.636 14.42 48 24 48z"/><path fill="#FBBC05" d="M10.23 28.126A14.99 14.99 0 019.273 24c0-1.43.246-2.819.686-4.117v-6.34H2.018A23.977 23.977 0 000 24c0 3.867.926 7.527 2.018 10.457l8.212-6.331z"/><path fill="#EA4335" d="M24 9.744c3.608 0 6.84 1.24 9.39 3.673l7.038-7.038C36.157 2.445 30.607 0 24 0 14.42 0 6.058 5.364 2.018 13.543l8.212 6.34C12.173 14.069 17.597 9.744 24 9.744z"/></svg>
     Entrar com Google
   </button>
+  <button class="btn-login" style="background:#141428;border:1px solid #2a2a50;color:#c0b8e0;margin-top:8px;" onclick="switchGoogleAccount()">Trocar conta Google</button>
+  <p id="loginDebug" style="display:none;margin-top:14px;font-size:11px;color:#9A98A6;text-align:center;word-break:break-all;max-width:300px;padding:0 16px;line-height:1.5;"></p>
 </div>
 
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
@@ -1217,29 +1219,70 @@
     journalFunctions.useEmulator('localhost', 5001);
   }
 
-  auth.onAuthStateChanged(user => {
-    currentUser = user;
-    if (user) {
-      document.getElementById('loginScreen').style.display = 'none';
-      renderUserInfo();
-      loadTagDescs();
-      syncTagDescsFromFirestore();
-      subscribeNotes();
-      subscribeEvents();
-      subscribeJournalFavorites();
-      const savedFcm=getJournalSettings().fcmToken;
-      if(savedFcm)saveJournalFcmToken(savedFcm).catch(e=>console.warn('FCM token restore error:',e));
-      updateApiStatus();
-      updateGcalButton();
-    } else {
-      if (notesUnsub) { notesUnsub(); notesUnsub = null; }
-      if (eventsUnsub) { eventsUnsub(); eventsUnsub = null; }
-      if (journalFavoritesUnsub) { journalFavoritesUnsub(); journalFavoritesUnsub = null; }
-      notes = []; events = []; journalFavorites = loadJournalFavoritesLocal(); currentId = null;
-      renderJournal();
-      document.getElementById('loginScreen').style.display = 'flex';
+  function setLoginDebug(msg) {
+    const el = document.getElementById('loginDebug');
+    if (el) { el.style.display = 'block'; el.textContent = msg; }
+    console.log('[AUTH]', msg);
+  }
+
+  async function initAuth() {
+    // 1. Persistencia primeiro (obrigatorio aguardar antes do redirect result)
+    try {
+      await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+    } catch (e) {
+      console.warn('[AUTH] Persistence error:', e);
     }
-  });
+
+    // 2. Captura resultado de redirect pendente (caso haja algum)
+    try {
+      const result = await auth.getRedirectResult();
+      if (result && result.user) {
+        console.log('[AUTH] Redirect OK:', result.user.email);
+      }
+    } catch (e) {
+      console.warn('[AUTH] Redirect error:', e);
+      const ignored = ['auth/no-current-user', 'auth/null-user', 'auth/cancelled-popup-request', 'auth/user-cancelled'];
+      if (!ignored.includes(e.code)) {
+        setLoginDebug('Erro ao entrar: ' + (e.message || e.code || e));
+      }
+    }
+
+    // 3. Mostra dica de popup para iOS se ainda nao logado
+    if (!auth.currentUser) {
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (isIOS) {
+        const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+        setLoginDebug('Dica iOS: se o login nao abrir, va em Configuracoes > Safari e desative "Bloquear pop-ups".' + (isStandalone ? ' (modo PWA)' : ''));
+      }
+    }
+
+    // 4. So registra o listener DEPOIS que o redirect result foi resolvido
+    auth.onAuthStateChanged(user => {
+      currentUser = user;
+      if (user) {
+        document.getElementById('loginScreen').style.display = 'none';
+        renderUserInfo();
+        loadTagDescs();
+        syncTagDescsFromFirestore();
+        subscribeNotes();
+        subscribeEvents();
+        subscribeJournalFavorites();
+        const savedFcm = getJournalSettings().fcmToken;
+        if (savedFcm) saveJournalFcmToken(savedFcm).catch(e => console.warn('FCM token restore error:', e));
+        updateApiStatus();
+        updateGcalButton();
+      } else {
+        if (notesUnsub) { notesUnsub(); notesUnsub = null; }
+        if (eventsUnsub) { eventsUnsub(); eventsUnsub = null; }
+        if (journalFavoritesUnsub) { journalFavoritesUnsub(); journalFavoritesUnsub = null; }
+        notes = []; events = []; journalFavorites = loadJournalFavoritesLocal(); currentId = null;
+        renderJournal();
+        document.getElementById('loginScreen').style.display = 'flex';
+      }
+    });
+  }
+
+  initAuth();
 
   function subscribeNotes() {
     if (notesUnsub) notesUnsub();
@@ -1285,30 +1328,70 @@
   async function saveEvent(ev) { if(!currentUser)return; await userCol('events').doc(ev.id).set(ev); }
   async function removeEventDb(id) { if(!currentUser)return; await userCol('events').doc(id).delete(); }
 
-  function signInWithGoogle() {
+  async function signInWithGoogle(forceSwitch) {
     if (window.location.protocol === 'file:') {
-      alert('Abra o Durando Mind pelo atalho da área de trabalho ou por http://localhost:8080/durando-mind.html. O login do Firebase não funciona quando o HTML é aberto direto como arquivo.');
+      alert('Abra o Durando Mind pelo atalho ou por http://localhost:8080/durando-mind.html');
       return;
     }
+
     const provider = new firebase.auth.GoogleAuthProvider();
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if (isMobile) {
-      auth.signInWithRedirect(provider).catch(e => alert('Erro ao entrar: ' + e.message));
-    } else {
-      auth.signInWithPopup(provider).catch(e => alert('Erro ao entrar: ' + e.message));
+    provider.setCustomParameters({
+      prompt: forceSwitch ? 'select_account consent' : 'select_account'
+    });
+
+    if (forceSwitch) {
+      try { await auth.signOut(); } catch(e) { console.warn('[AUTH] signOut error:', e); }
+    }
+
+    setLoginDebug('Abrindo login do Google…');
+
+    // Popup e mais confiavel que redirect no iOS Safari/PWA.
+    // Com signInWithRedirect o iOS tira o usuario do contexto do PWA;
+    // ao voltar o app nao encontra o resultado e fica preso no login.
+    // Com signInWithPopup o PWA fica aberto e recebe o resultado via postMessage.
+    try {
+      await auth.signInWithPopup(provider);
+      setLoginDebug('');
+    } catch (e) {
+      if (e.code === 'auth/popup-blocked') {
+        setLoginDebug('Popup bloqueado pelo Safari. Va em Configuracoes > Safari e desative "Bloquear pop-ups", depois tente novamente.');
+      } else if (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') {
+        setLoginDebug('');
+        console.warn('[AUTH] Popup fechado pelo usuario');
+      } else if (e.code === 'auth/unauthorized-domain') {
+        const domain = window.location.hostname;
+        setLoginDebug(
+          'Dominio nao autorizado: "' + domain + '". ' +
+          'Acesse Firebase Console > Authentication > Settings > Authorized Domains e adicione "' + domain + '". ' +
+          'Depois recarregue o app.'
+        );
+        console.error('[AUTH] Dominio nao autorizado:', domain, e);
+      } else if (e.code === 'auth/internal-error' || e.code === 'auth/network-request-failed') {
+        setLoginDebug('Erro de rede. Verifique sua conexao e tente novamente.');
+        console.warn('[AUTH] Erro de rede:', e);
+      } else {
+        console.warn('[AUTH] Popup error:', e);
+        // Mostra codigo exato para diagnostico
+        const code = e.code || 'sem-codigo';
+        const msg  = e.message || String(e);
+        setLoginDebug('Erro [' + code + ']: ' + msg);
+      }
     }
   }
 
-  auth.getRedirectResult().then(result => {
-    if (result && result.user) { /* redirect ok */ }
-  }).catch(e => {
-    if (e.code !== 'auth/no-current-user') alert('Erro ao entrar: ' + e.message);
-  });
+  function switchGoogleAccount() {
+    signInWithGoogle(true);
+  }
+
   function doSignOut() {
     if(notesUnsub) notesUnsub();
     if(eventsUnsub) eventsUnsub();
     if(journalFavoritesUnsub) journalFavoritesUnsub();
-    auth.signOut();
+    auth.signOut().then(()=>{
+      currentUser=null;
+      document.getElementById('loginScreen').style.display='flex';
+      showToast('Conta desconectada. Entre com a conta correta.');
+    });
   }
   function renderUserInfo() {
     const el = document.getElementById('userInfo');
@@ -2056,7 +2139,14 @@
       try{return await callAiBackend(cfg,prompt);}
       catch(e){console.warn('AI backend unavailable, using local fallback:',e);if(!cfg.key)throw e;}
     }
-    if(!cfg.key)throw new Error('Configure uma chave local ou as variáveis de ambiente da IA no backend.');
+    if(!cfg.key){
+      // Chave ausente — abre modal de configuração automaticamente
+      openApiModal();
+      throw new Error(
+        'Chave de API não encontrada. No celular o armazenamento local pode ser apagado ao reinstalar o app. ' +
+        'Configure novamente sua chave de API no menu de configurações (ícone ⚙️).'
+      );
+    }
     return cfg.provider==='anthropic'?callAnthropic(cfg,prompt):callOpenAICompat(cfg,prompt);
   }
   async function callAiBackend(cfg,prompt){
@@ -2066,7 +2156,20 @@
     if(!text)throw new Error('Backend de IA retornou resposta vazia.');
     return text;
   }
-  async function callOpenAICompat(cfg,prompt){const ep={groq:'https://api.groq.com/openai/v1/chat/completions',openai:'https://api.openai.com/v1/chat/completions'};const res=await fetch(ep[cfg.provider],{method:'POST',headers:{'Authorization':'Bearer '+cfg.key,'Content-Type':'application/json'},body:JSON.stringify({model:cfg.model,messages:[{role:'user',content:prompt}]})});if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||'HTTP '+res.status);}return(await res.json()).choices?.[0]?.message?.content?.trim()??'(vazio)';}
+  async function callOpenAICompat(cfg,prompt){
+    const ep={groq:'https://api.groq.com/openai/v1/chat/completions',openai:'https://api.openai.com/v1/chat/completions'};
+    const res=await fetch(ep[cfg.provider],{method:'POST',headers:{'Authorization':'Bearer '+cfg.key,'Content-Type':'application/json'},body:JSON.stringify({model:cfg.model,messages:[{role:'user',content:prompt}]})});
+    if(!res.ok){
+      const e=await res.json().catch(()=>({}));
+      if(res.status===401){
+        openApiModal();
+        throw new Error('Chave de API inválida ou expirada para '+cfg.provider+'. Reconfigure sua chave em ⚙️ Configurações. Obtenha uma nova em console.groq.com/keys');
+      }
+      if(res.status===429){throw new Error('Limite de requisições atingido ('+cfg.provider+'). Aguarde alguns segundos e tente novamente.');}
+      throw new Error(e?.error?.message||'Erro HTTP '+res.status+' ao chamar '+cfg.provider);
+    }
+    return(await res.json()).choices?.[0]?.message?.content?.trim()??'(vazio)';
+  }
   async function callAnthropic(cfg,prompt){const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'x-api-key':cfg.key,'anthropic-version':'2023-06-01','Content-Type':'application/json'},body:JSON.stringify({model:cfg.model,max_tokens:1024,messages:[{role:'user',content:prompt}]})});if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||'HTTP '+res.status);}return(await res.json()).content?.[0]?.text?.trim()??'(vazio)';}
   function setAiLoading(on,action){document.querySelectorAll('.btn-ai').forEach(b=>b.disabled=on);if(on){document.getElementById('aiResultPanel').classList.add('open');document.getElementById('aiResultTitle').textContent=AI_TITLES[action];document.getElementById('aiResultBody').innerHTML='<div class="ai-loading"><div class="spinner"></div> Processando...</div>';}}
   function setAiResult(title,text){document.getElementById('aiResultPanel').classList.add('open');document.getElementById('aiResultTitle').textContent=title;document.getElementById('aiResultBody').innerHTML=esc(text).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');}
@@ -2573,10 +2676,17 @@
   // ============================================================
   if('serviceWorker' in navigator){
     window.addEventListener('load',()=>{
-      navigator.serviceWorker.register('./sw.js')
+      let swRefreshing=false;
+      navigator.serviceWorker.addEventListener('controllerchange',()=>{
+        if(swRefreshing)return;
+        swRefreshing=true;
+        window.location.reload();
+      });
+      navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'})
         .then(reg=>{
           pwaRegistration=reg;
           console.log('[PWA] SW registrado:',reg.scope);
+          reg.update().catch(err=>console.warn('[PWA] Falha ao checar update do SW:',err));
           reg.addEventListener('updatefound',()=>{
             const nw=reg.installing;
             nw.addEventListener('statechange',()=>{
